@@ -22,11 +22,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Chạy script `build` trong package.json: astro check → astro build, rồi upload artifact cho Pages
+      # Lấy origin của site từ Settings → Pages (github.io hoặc custom domain)
+      - name: Read Pages settings
+        id: pages
+        uses: actions/configure-pages@v6
+
+      # Chạy script `build` trong package.json: astro check → astro build (kèm
+      # kiểm tra link nội bộ), rồi upload artifact cho Pages
       - name: Install, check, build, and upload
         uses: withastro/action@v6
         with:
           package-manager: pnpm@12.6.0
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
 
   deploy:
     needs: build
