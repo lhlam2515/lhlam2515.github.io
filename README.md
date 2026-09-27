@@ -66,11 +66,11 @@ draft: false
 
 ### Case study dự án
 
-Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu trúc **problem → decisions → outcome**, không phải danh sách tính năng. Các trường: `title`, `summary`, `role`, `stack`, `problem`, `decisions`, `outcome`, `repoUrl?`, `liveUrl?`, `featured`, `order`.
+Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu trúc **problem → decisions → outcome**, không phải danh sách tính năng. Các trường: `title`, `summary`, `slug`, `role`, `stack`, `problem`, `decisions` (mỗi mục có `title` và `rationale`), `outcome`, `repoUrl?`, `liveUrl?`, `featured`, `order`.
 
 ### Quy ước
 
-- **Slug** là ASCII không dấu (`đ → d`), và không đổi sau khi đăng.
+- **Slug** là ASCII không dấu (`đ → d`), không trùng trong cùng collection, và không đổi sau khi đăng. Tạo từ tiêu đề bằng `slugify()` trong `src/lib/slug.ts`.
 - **Frontmatter sai schema** làm build thất bại. Đây là chủ ý: lỗi phải bị bắt trước khi lên site.
 - **Tiếng Việt** nằm ở URL gốc. Tiếng Anh sẽ thêm sau dưới `/en/` mà không đổi URL cũ.
 

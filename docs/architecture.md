@@ -119,9 +119,11 @@ Hai collection, file xếp theo ngôn ngữ (ADR-006). Frontmatter sai schema th
 | Collection | Vị trí | Trường |
 | --- | --- | --- |
 | `blog` | `src/content/blog/vi/*.md(x)` | `title`, `description`, `slug`, `pubDate`, `updatedDate?`, `tags[]`, `draft`, `cover?` |
-| `projects` | `src/content/projects/vi/*.md(x)` | `title`, `summary`, `role`, `stack[]`, `problem`, `decisions[]`, `outcome`, `repoUrl?`, `liveUrl?`, `featured`, `order` |
+| `projects` | `src/content/projects/vi/*.md(x)` | `title`, `summary`, `slug`, `role`, `stack[]`, `problem`, `decisions[]` (`title`, `rationale`), `outcome`, `repoUrl?`, `liveUrl?`, `featured`, `order` |
 
 Cấu trúc `problem → decisions → outcome` của `projects` là chủ ý. Nó ép mỗi case study trình bày vấn đề, quyết định và kết quả, thay vì một danh sách tính năng.
+
+`slug` bắt buộc ở cả hai collection và được dùng làm id của entry, nên URL không phụ thuộc tên file. Schema kiểm tra slug (và tag) bằng regex ASCII; slug trùng trong một collection làm build thất bại. Schema nằm ở `src/content.config.ts`, hàm `slugify` ở `src/lib/slug.ts`.
 
 ### Các phương án
 
@@ -323,8 +325,12 @@ Những thứ không đưa vào kiến trúc ở phạm vi hiện tại:
 
 Các ADR đã chốt về hướng; ba spike dưới đây cung cấp bằng chứng thực nghiệm mà tài liệu này chưa có.
 
-- [ ] **Khởi tạo và deploy thật** (ADR-002, ADR-005): Astro bản mới nhất trên repo `<username>.github.io`, deploy bằng workflow chính thức, ghi lại thời gian build.
-- [ ] **Kiểm tra schema** (ADR-003, ADR-006): viết 2 bài blog và 2 case study; xác nhận slug ASCII và cấu trúc `problem → decisions → outcome` dùng được.
+- [x] **Khởi tạo và deploy thật** (ADR-002, ADR-005): Astro bản mới nhất trên repo `<username>.github.io`, deploy bằng workflow chính thức, ghi lại thời gian build.
+- [x] **Kiểm tra schema** (ADR-003, ADR-006): viết 2 bài blog và 2 case study; xác nhận slug ASCII và cấu trúc `problem → decisions → outcome` dùng được. Kết quả ngày 27/09/2026:
+  - Slug có dấu, tag có dấu, thiếu slug, thiếu `decisions`, `updatedDate` trước `pubDate` đều làm build thất bại.
+  - Slug trùng **không** bị Astro 7.3.5 chặn: check có sẵn chỉ là cảnh báo, và trên data store sạch (mọi lần build ở CI) nó không chạy được vì loader xử lý file song song. Đã tự kiểm tra trong `generateId`.
+  - Với dự án có quyết định kiến trúc rõ (chính site này), cấu trúc dùng tự nhiên. Bản nháp case study DevOverflow (dự án làm theo khoá học) cho thấy cấu trúc buộc tách phần theo bài giảng khỏi phần tự quyết, và `role` phải gánh sắc thái đó. Bản nháp đã gỡ khỏi repo; case study này viết lại sau khi xong đợt refactor kiến trúc của DevOverflow.
+  - Còn mở: `problem`, `decisions`, `outcome` bị viết hai lần, một bản tóm tắt trong frontmatter và một bản chi tiết trong thân bài. `outcome` của `sojdev-site` chưa có số liệu; sẽ cập nhật sau spike "Đo baseline", đồng thời dùng làm phép thử cho việc cập nhật một case study đã có.
 - [ ] **Đo baseline** (ADR-001, ADR-004): chạy Lighthouse trước khi thêm bất kỳ island nào.
 
 ## Điểm chưa kiểm chứng
