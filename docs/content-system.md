@@ -1,0 +1,256 @@
+# SoJDev Site — Kiến trúc thông tin
+
+Cập nhật: 27/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu nền: [architecture.md](./architecture.md)
+
+## Phạm vi
+
+Tài liệu này quyết định **cấu trúc** của nội dung: có những trang nào, URL ra sao, người đọc đi từ đâu đến đâu, nội dung được phân loại và liên kết thế nào. Nó không quyết định viết gì (chiến lược nội dung) hay quy trình đăng bài.
+
+Mọi quyết định ở đây kế thừa sáu ADR đã chốt. Chỗ nào cần mở rộng schema của ADR-003 được ghi rõ ở mục [Thay đổi schema](#thay-đổi-schema-so-với-adr-003).
+
+## Drivers
+
+**Người đọc và đường vào:**
+
+| Người đọc | Đường vào điển hình | Cần tìm thấy nhanh |
+| --- | --- | --- |
+| Nhà tuyển dụng / tech lead | Link từ CV, LinkedIn → trang chủ hoặc About | Định vị SoJDev, 2–3 dự án tiêu biểu, cách liên hệ |
+| Developer | Tìm kiếm hoặc link chia sẻ → thẳng vào một bài | Nội dung bài, rồi bài liên quan |
+| Tác giả | Repo | Biết đặt file ở đâu, gắn tag gì mà không phải nghĩ |
+
+**Ràng buộc kế thừa:**
+
+- URL và slug bất biến sau khi đăng; GitHub Pages không có redirect phía server (ADR-001, ADR-006). Hệ quả: **mọi quyết định về URL là quyết định không đảo ngược được**, nên được chốt trước mọi thứ khác.
+- Dưới 200 bài trong vài năm, một tác giả (giả định trong architecture.md).
+- Tiếng Việt ở gốc, tiếng Anh dưới `/en/` sau này (ADR-006).
+- Không tìm kiếm cho đến khi có vài chục bài; trước đó trang tag đảm nhận việc khám phá (ADR-004).
+
+**Danh mục quyết định:**
+
+| IA | Quyết định | Lựa chọn | Đảo ngược được? |
+| --- | --- | --- | --- |
+| IA-001 | Sơ đồ trang và URL | 4 khu vực phẳng, URL không chứa ngày | Không |
+| IA-002 | Phân loại | Một tầng tag, từ vựng có kiểm soát | Slug tag: không. Còn lại: có |
+| IA-003 | Liên kết chéo | Bài → dự án lưu một chiều, chiều ngược tính lúc build | Có |
+| IA-004 | Điều hướng | 3 mục chính; tag không lên menu | Có |
+| IA-005 | Trang danh sách | Không phân trang; blog nhóm theo năm | Có |
+| IA-006 | Trang chủ | Định vị + dự án nổi bật + bài mới | Có |
+
+## IA-001: Sơ đồ trang và URL
+
+### Quyết định
+
+```mermaid
+flowchart TD
+  H["/ Trang chủ"] --> P["/projects/"]
+  H --> B["/blog/"]
+  H --> A["/about/"]
+  P --> PD["/projects/&lt;slug&gt;/"]
+  B --> BD["/blog/&lt;slug&gt;/"]
+  B --> T["/tags/"]
+  T --> TD["/tags/&lt;tag&gt;/"]
+  BD --> TD
+  BD -. liên quan .-> PD
+  PD -. bài viết về dự án .-> BD
+```
+
+| Trang | URL | Nguồn dữ liệu |
+| --- | --- | --- |
+| Trang chủ | `/` | `projects` (featured) + `blog` (mới nhất) |
+| Danh sách dự án | `/projects/` | `projects` |
+| Case study | `/projects/<slug>/` | một entry `projects` |
+| Danh sách bài | `/blog/` | `blog` |
+| Bài viết | `/blog/<slug>/` | một entry `blog` |
+| Mọi tag | `/tags/` | từ vựng tag + số bài |
+| Một tag | `/tags/<tag>/` | `blog` lọc theo tag |
+| Giới thiệu | `/about/` | trang tĩnh, JSON-LD `Person` |
+| RSS | `/rss.xml` | `blog`, bỏ draft |
+| Không tìm thấy | `/404.html` | trang tĩnh |
+
+**Quy ước URL:**
+
+- **Không có ngày trong URL** (loại `/2026/09/<slug>/`). Bài kỹ thuật được cập nhật (`updatedDate`); ngày trong URL làm bài trông cũ dù nội dung mới, và không thể sửa vì slug bất biến.
+- **Không có category trong URL** (loại `/blog/frontend/<slug>/`). Phân loại có thể đổi; URL thì không.
+- **Luôn có dấu `/` ở cuối.** Canonical, sitemap và link nội bộ đều dùng dạng này, khớp với cách GitHub Pages phục vụ `index.html` trong thư mục. Cấu hình: `trailingSlash: "always"`, `build.format: "directory"`. Link nội bộ thiếu dấu `/` làm build thất bại (kiểm tra link của ADR-005).
+- **Slug dự án** theo cùng quy tắc ASCII bỏ dấu của ADR-006 và cũng bất biến.
+- **Trang 404 là đường cứu hộ duy nhất** khi không có redirect: nó có link tới `/blog/`, `/projects/`, `/tags/`.
+
+### Các phương án
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| **`/blog/<slug>/` phẳng (chọn)** | Ngắn, bền, khớp ví dụ ADR-006 | Không thể hiện thời gian hay chủ đề trong URL |
+| `/<slug>/` ở gốc | Ngắn nhất | Trùng không gian tên với `/about/`, `/projects/`, tag; khó thêm khu vực mới |
+| `/YYYY/MM/<slug>/` | Không lo trùng slug | Bài trông cũ; khoá cứng ngày |
+| `/blog/<category>/<slug>/` | URL mô tả chủ đề | Đổi category là vỡ URL |
+
+### Hệ quả
+
+- Thêm khu vực mới (ví dụ `/notes/`) là thay đổi cộng thêm, không đụng URL cũ.
+- Slug bài phải là duy nhất trong toàn bộ `blog`. Điều này đã được kiểm tra lúc build bằng `slugId()` trong `src/content.config.ts` (xem [Kiểm tra lúc build](#kiểm-tra-lúc-build)).
+
+## IA-002: Phân loại — một tầng tag, từ vựng có kiểm soát
+
+### Bối cảnh
+
+Với một tác giả, rủi ro chính của tag không phải thiếu mà là trôi: `ai-agent`, `ai-agents`, `agents` cùng tồn tại, mỗi cái có trang riêng với một bài. Slug tag lại nằm trong URL (`/tags/<tag>/`), nên đổi tên sau này cũng vỡ link như đổi slug bài.
+
+### Quyết định
+
+- **Một tầng, không category.** Dưới 200 bài, hai tầng phân loại (category + tag) buộc mỗi bài trả lời hai câu hỏi phân loại mà người đọc không cần.
+- **Từ vựng có kiểm soát:** tag được khai báo trong một collection dữ liệu riêng. Bài gắn tag chưa khai báo thì build thất bại.
+- **Mỗi bài 1–4 tag.** Giới hạn được kiểm tra bằng schema.
+- **Slug tag là ID bền, luôn là thuật ngữ tiếng Anh** (`astro`, `testing`, `requirements-engineering`, `ai-agents`), để giữ đúng thuật ngữ của chủ đề. Không dùng tiếng Việt bỏ dấu cho slug tag. Nhãn hiển thị thì theo ngôn ngữ (`label.vi`, sau này `label.en`).
+- **Một số tag được đánh dấu `featured`** để hiện thành các nút lọc ở đầu `/blog/`. Đây là cách thể hiện các chủ đề trọng tâm mà không cần tầng category.
+- **Trang `/tags/<tag>/` chỉ sinh ra khi tag có ít nhất một bài đã đăng.** Tag chỉ gắn với bài draft thì không có trang.
+
+### Các phương án về slug tag
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| **Thuật ngữ tiếng Anh, nhãn theo ngôn ngữ (chọn, chốt 27/09/2026)** | Giữ đúng thuật ngữ chủ đề; một slug dùng chung cho `/tags/x/` và `/en/tags/x/` | URL tiếng Việt lẫn tiếng Anh |
+| Tiếng Việt bỏ dấu (`kiem-thu`) | Nhất quán với slug bài | Lệch thuật ngữ gốc; khi song ngữ phải có hai slug cho một khái niệm, cần bảng ánh xạ |
+| Tag tự do, không khai báo | Không ma sát khi viết | Trôi từ vựng; trang tag mỏng |
+
+Quy tắc: **một khái niệm, một slug tiếng Anh, không bao giờ đổi.** Slug viết thường, các từ nối bằng gạch ngang.
+
+### Hệ quả
+
+- **Khó hơn:** thêm tag mới là hai bước (khai báo, rồi gắn). Đây là ma sát có chủ ý.
+- **Để sau:** `series` cho bài nhiều phần. Series không nằm trong URL bài (bài vẫn ở `/blog/<slug>/`), nên thêm sau không phá gì. Thêm khi có series thật đầu tiên.
+- **Điều kiện đảo ngược:** một tag vượt khoảng 40 bài và người đọc cần lọc sâu hơn → cân nhắc tầng thứ hai. Tag cũ vẫn giữ URL.
+
+## IA-003: Liên kết chéo giữa bài viết và dự án
+
+### Bối cảnh
+
+Hai loại nội dung phục vụ hai người đọc khác nhau, nhưng giá trị thương hiệu nằm ở chỗ chúng dẫn sang nhau: nhà tuyển dụng đọc case study thấy có bài phân tích sâu; developer đọc bài thấy nó xuất phát từ một dự án thật.
+
+### Quyết định
+
+- **Lưu một chiều:** bài viết khai báo `relatedProjects` (tham chiếu tới entry `projects`). Dự án không lưu danh sách bài.
+- **Chiều ngược tính lúc build:** trang `/projects/<slug>/` có mục "Bài viết liên quan", lọc từ mọi bài có tham chiếu tới dự án đó.
+- **Bài liên quan trên trang bài:** tối đa 3 bài, xếp theo số tag trùng, rồi theo ngày mới hơn. Không có bài nào trùng tag thì bỏ mục này, không lấp bằng bài ngẫu nhiên.
+- **`stack[]` của dự án không phải taxonomy.** Nó mô tả công nghệ, có thể rất chi tiết; không sinh trang tag.
+
+### Các phương án
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| **Một chiều + tính ngược (chọn)** | Một nguồn sự thật; không thể lệch | Liên kết chỉ khởi tạo được từ phía bài |
+| Lưu hai chiều | Mỗi phía tự khai báo | Sửa một bên quên bên kia là lệch |
+| Gộp `stack` vào tag | `/tags/astro/` liệt kê cả dự án | Từ vựng tag phình theo từng thư viện nhỏ |
+
+### Hệ quả
+
+- **Điều kiện đảo ngược:** muốn `/tags/<tag>/` hiện cả dự án → thêm `tags?` vào `projects`, dùng chung từ vựng IA-002. Thay đổi cộng thêm, không đụng URL.
+
+## IA-004: Điều hướng
+
+### Quyết định
+
+- **Header:** logo SoJDev (về `/`) và 3 mục: **Dự án**, **Blog**, **Giới thiệu**. Thứ tự đặt Dự án trước vì đó là bằng chứng năng lực cho người đọc đến từ CV.
+- **Tag không lên menu chính.** Đường vào tag: nút lọc `featured` trên `/blog/`, tag trên mỗi bài, link "Mọi chủ đề" tới `/tags/`.
+- **Footer:** RSS, GitHub, LinkedIn, email; về sau thêm nút chuyển ngôn ngữ.
+- **Không breadcrumb.** Độ sâu tối đa là hai cấp; mỗi trang chi tiết có một link quay về danh sách của nó.
+- **Trang bài:** tiêu đề, ngày đăng, ngày cập nhật (nếu có), tag, nội dung, dự án liên quan, bài liên quan.
+
+### Hệ quả
+
+- Menu không phải đổi khi số bài hay số tag tăng.
+- **Điều kiện đảo ngược:** thêm khu vực cấp cao thứ tư (ví dụ `/notes/`) → xem lại menu; nếu vượt 4 mục, gom bớt.
+
+## IA-005: Trang danh sách
+
+### Quyết định
+
+- **`/blog/`:** mọi bài đã đăng trên một trang, nhóm theo năm, mới nhất trước. Mỗi dòng: tiêu đề, ngày, `description`. Nút lọc tag `featured` ở đầu trang là link tới `/tags/<tag>/`, không lọc bằng JavaScript.
+- **Không phân trang.** Vài trăm dòng chỉ gồm tiêu đề và mô tả là một trang HTML nhẹ. Phân trang tạo ra các URL `/blog/2/` có nội dung dịch chuyển mỗi lần đăng bài, và người đọc phải bấm qua nhiều trang để quét.
+- **`/projects/`:** dự án `featured` trước, sau đó theo `order`. Mỗi thẻ: tiêu đề, `summary`, `role`, vài mục `stack`.
+- **`/tags/`:** mọi tag có bài, kèm số bài, xếp theo số bài giảm dần.
+- **Loại khỏi mọi danh sách:** bài `draft: true`. Quy tắc này áp dụng giống nhau cho `/blog/`, trang tag, bài liên quan, RSS và sitemap, qua một hàm lọc dùng chung.
+
+### Hệ quả
+
+- **Điều kiện đảo ngược:** HTML của `/blog/` vượt ngưỡng hiệu năng đo bằng Lighthouse ở spike baseline → thêm phân trang. `/blog/` vẫn là trang đầu nên không URL nào hỏng.
+
+## IA-006: Trang chủ
+
+### Quyết định
+
+Trang chủ phục vụ người đọc đến từ CV; developer đến từ tìm kiếm hiếm khi đi qua đây.
+
+1. **Định vị:** một câu nói SoJDev là ai và làm gì, link tới `/about/`.
+2. **Dự án nổi bật:** tối đa 3 entry `featured: true`, xếp theo `order`, link "Mọi dự án".
+3. **Bài mới:** 3–5 bài đã đăng gần nhất, link "Mọi bài viết".
+4. **Liên hệ:** các kênh giống footer.
+
+Trang chủ không có nội dung riêng; mọi khối đều lấy từ collection, nên không bao giờ lệch với trang danh sách.
+
+## Metadata theo loại trang
+
+| Loại trang | `<title>` | `description` | JSON-LD |
+| --- | --- | --- | --- |
+| Trang chủ | `SoJDev` | câu định vị | `WebSite` |
+| Bài viết | `<title> · SoJDev` | trường `description` | `BlogPosting` (`datePublished`, `dateModified` từ `updatedDate`) |
+| Case study | `<title> · Dự án · SoJDev` | trường `summary` | — |
+| Trang tag | `<label.vi> · SoJDev` | `description` của tag | — |
+| Giới thiệu | `Giới thiệu · SoJDev` | câu định vị | `Person` (đã có trong architecture.md) |
+
+Canonical luôn là URL tuyệt đối có dấu `/` cuối, dựng từ `site` trong `astro.config.mjs`. `site` lấy từ Settings → Pages lúc build (ADR-005), nên gắn custom domain không cần sửa code.
+
+## Thay đổi schema so với ADR-003
+
+Hai thay đổi là cộng thêm; `blog.tags[]` là trường đã có nhưng bị siết lại:
+
+| Collection | Thay đổi | Lý do |
+| --- | --- | --- |
+| `tags` (mới) | Collection dữ liệu: `id` (slug), `label.vi`, `description`, `featured` | IA-002 |
+| `blog` | `tags[]` đổi từ mảng slug tự do (mặc định `[]`) sang tham chiếu `tags`, 1–4 phần tử, bắt buộc | IA-002 |
+| `blog` | `relatedProjects?` tham chiếu `projects` | IA-003 |
+
+Các bài hiện có đều có 2–3 tag nên đã thoả giới hạn 1–4. Khi tạo collection `tags`, phải khai báo đủ các tag đang dùng: `architecture`, `astro`, `i18n`, `nextjs`, `seo`.
+
+`series?` và `projects.tags?` được hoãn theo điều kiện ở IA-002 và IA-003.
+
+## Kiểm tra lúc build
+
+Thuộc bước build trong quality gate của ADR-005.
+
+Đã có (từ spike "Kiểm tra schema"):
+
+- Slug bài duy nhất trong `blog`; slug dự án duy nhất trong `projects` (`slugId()`).
+- Slug bài, dự án và tag khớp quy tắc ASCII của ADR-006: chữ thường, số, nối bằng gạch ngang (`slugSchema`).
+
+Cần thêm:
+
+- Mọi tag và `relatedProjects` tham chiếu tới entry tồn tại.
+- Mỗi bài có 1–4 tag.
+
+## Stop rules
+
+- Không category, không tầng phân loại thứ hai (IA-002).
+- Không ngày hay category trong URL (IA-001).
+- Không phân trang, không lọc phía client (IA-005).
+- Không trang lưu trữ theo năm/tháng; nhóm theo năm trên `/blog/` là đủ.
+- Không `series` cho đến khi có series thật đầu tiên.
+
+## Stress test: 200 bài, 40 tag
+
+- `/blog/` có 200 dòng: vẫn một trang; kiểm tra bằng Lighthouse theo IA-005.
+- 40 tag: `/tags/` vẫn quét được; nếu có tag vượt 40 bài thì xét điều kiện đảo ngược của IA-002.
+- Tag chỉ 1 bài: chấp nhận được vì từ vựng có kiểm soát. Tag vẫn 1 bài sau một năm là dấu hiệu nên gộp khi *chưa đăng*, còn sau khi đăng thì giữ URL.
+
+## Spike kiểm chứng
+
+Spike "Kiểm tra IA" trong danh sách spike của architecture.md (spike "Kiểm tra schema" đã đóng):
+
+- [ ] Khai báo collection `tags` và tham chiếu từ `blog`; xác nhận build thất bại khi gắn tag chưa khai báo.
+- [ ] Viết 1 bài có `relatedProjects`; xác nhận trang dự án hiện mục "Bài viết liên quan".
+- [x] Kiểm tra URL không có dấu `/` cuối trên GitHub Pages thật được chuyển về dạng có dấu `/`. Kết quả ngày 27/09/2026:
+  - GitHub Pages trả 301 từ `/versions` sang `/versions/` khi thư mục có `index.html` (đo trên `pages.github.com`, cũng chạy trên GitHub Pages). Site này chưa có trang con nên chưa đo trực tiếp được; đo lại trên `/blog` khi trang đó ra đời.
+  - `trailingSlash` và `build.format` của Astro v7 khớp IA-001 nhưng không đủ: `trailingSlash` chỉ ràng buộc dev server và trang render theo yêu cầu; với trang prerender, host quyết định. Vì vậy quy ước được giữ bằng kiểm tra link lúc build.
+
+## Điểm chưa kiểm chứng
+
+- Cách `reference()` của Astro v7 báo lỗi khi entry được tham chiếu không tồn tại: lúc sync schema hay chỉ khi gọi `getEntry()`. Nếu chỉ lúc gọi, cần thêm bước kiểm tra riêng.

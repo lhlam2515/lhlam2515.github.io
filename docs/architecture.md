@@ -1,6 +1,6 @@
 # SoJDev Site — Tài liệu kiến trúc
 
-Cập nhật: 27/09/2026 · Tác giả: Lê Hoàng Lâm
+Cập nhật: 27/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu phái sinh: [content-system.md](./content-system.md) (kiến trúc thông tin: trang, URL, phân loại)
 
 ## Bối cảnh chung
 
@@ -23,7 +23,7 @@ Site của SoJDev là một site tĩnh (SSG) build bằng Astro, host trên GitH
 
 - Dưới 200 bài viết trong vài năm tới.
 - Chỉ một người biên tập (tác giả).
-- Có thể dùng custom domain.
+- Sẽ dùng custom domain; chưa có domain. Code không phụ thuộc vào việc này (ADR-005).
 
 **Danh mục quyết định:**
 
@@ -125,6 +125,8 @@ Cấu trúc `problem → decisions → outcome` của `projects` là chủ ý. N
 
 `slug` bắt buộc ở cả hai collection và được dùng làm id của entry, nên URL không phụ thuộc tên file. Schema kiểm tra slug (và tag) bằng regex ASCII; slug trùng trong một collection làm build thất bại. Schema nằm ở `src/content.config.ts`, hàm `slugify` ở `src/lib/slug.ts`.
 
+Kiến trúc thông tin mở rộng schema này theo cách cộng thêm: collection `tags` làm từ vựng có kiểm soát, `blog.tags[]` thành tham chiếu 1–4 phần tử, và `blog.relatedProjects?` ([content-system.md — Thay đổi schema](./content-system.md#thay-đổi-schema-so-với-adr-003)).
+
 ### Các phương án
 
 | Phương án | Độ phức tạp | Chi phí | Ghi chú |
@@ -196,10 +198,10 @@ GitHub Pages cho mỗi tài khoản đúng một user site. Project repo thì pu
 
 - **Repo:** `<username>.github.io`, không cấu hình `base`.
 - **Nguồn Pages:** đặt Source là GitHub Actions.
-- **Workflow** theo tài liệu Astro hiện tại: `actions/checkout@v7` → `withastro/action@v6` (Node mặc định 24) → `actions/deploy-pages@v5`.
-- **Quality gate trước deploy:** `astro check`, build (bao gồm kiểm tra schema), kiểm tra link hỏng.
+- **Workflow** theo tài liệu Astro hiện tại: `actions/checkout@v7` → `actions/configure-pages@v6` → `withastro/action@v6` (Node mặc định 24) → `actions/deploy-pages@v5`.
+- **Quality gate trước deploy:** `astro check`, build (bao gồm kiểm tra schema), kiểm tra link hỏng. Cả ba nằm trong script `build`, nên chạy giống nhau ở máy và ở CI. Kiểm tra link là integration `src/integrations/check-links.ts`, chạy sau khi build xong. Nó làm build thất bại khi link nội bộ trỏ tới file không tồn tại hoặc thiếu dấu `/` cuối (IA-001). Link ngoài không được kiểm, để lỗi mạng của site khác không chặn deploy.
 - **Lockfile** được commit, vì action dựa vào đó để nhận diện package manager.
-- **Custom domain:** file `public/CNAME`, `site` trỏ về domain, không có `base`.
+- **Domain không nằm trong code.** Custom domain đặt ở Settings → Pages; khi deploy bằng Actions, file `CNAME` bị bỏ qua và không cần ([GitHub Docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)). `configure-pages` đọc origin hiện tại (github.io hoặc custom domain) và truyền cho build qua `SITE_URL`; `astro.config.mjs` dùng giá trị này làm `site`, và làm build thất bại nếu thiếu ở CI. Không có `base`.
 
 ### Các phương án
 
@@ -289,20 +291,25 @@ Mọi thay đổi đi qua quality gate trước khi deploy; island phía trình 
 ```
 <username>.github.io/
 ├─ .github/workflows/deploy.yml
-├─ public/                 # CNAME, favicon, robots.txt, OG mặc định
+├─ public/                 # favicon, robots.txt, OG mặc định
 ├─ src/
 │  ├─ content/
 │  │  ├─ blog/vi/           # *.md(x)
-│  │  └─ projects/vi/
+│  │  ├─ projects/vi/
+│  │  └─ tags/              # từ vựng tag (IA-002)
 │  ├─ content.config.ts    # schema các collection
+│  ├─ lib/                 # slug.ts, hàm lọc draft dùng chung
+│  ├─ integrations/        # check-links.ts (quality gate)
 │  ├─ layouts/             # Base, Post, Project
 │  ├─ components/          # thuần Astro; island chỉ khi cần tương tác
-│  ├─ pages/               # index, about, blog/[...slug], projects/[...slug], tags/[tag], rss.xml
+│  ├─ pages/               # xem sơ đồ trang ở content-system.md (IA-001)
+│  │                       # index, about, 404, rss.xml, blog/{index,[slug]},
+│  │                       # projects/{index,[slug]}, tags/{index,[tag]}
 │  └─ styles/              # design tokens của SoJDev
-└─ astro.config.mjs        # site, integrations: sitemap, mdx
+└─ astro.config.mjs        # site (từ SITE_URL), trailingSlash, integrations: check-links, sitemap, mdx
 ```
 
-Tầng SEO và thương hiệu sinh ra lúc build: sitemap, RSS, canonical URL, Open Graph image theo bài, JSON-LD kiểu `Person` trên trang About.
+Tầng SEO và thương hiệu sinh ra lúc build: sitemap, RSS, canonical URL, Open Graph image theo bài, JSON-LD (`WebSite` ở trang chủ, `BlogPosting` ở bài viết, `Person` ở trang About). Chi tiết theo loại trang nằm ở [content-system.md — Metadata theo loại trang](./content-system.md#metadata-theo-loại-trang).
 
 ### Stress test: traffic tăng 100 lần
 
@@ -332,12 +339,14 @@ Các ADR đã chốt về hướng; ba spike dưới đây cung cấp bằng ch�
   - Với dự án có quyết định kiến trúc rõ (chính site này), cấu trúc dùng tự nhiên. Bản nháp case study DevOverflow (dự án làm theo khoá học) cho thấy cấu trúc buộc tách phần theo bài giảng khỏi phần tự quyết, và `role` phải gánh sắc thái đó. Bản nháp đã gỡ khỏi repo; case study này viết lại sau khi xong đợt refactor kiến trúc của DevOverflow.
   - Còn mở: `problem`, `decisions`, `outcome` bị viết hai lần, một bản tóm tắt trong frontmatter và một bản chi tiết trong thân bài. `outcome` của `sojdev-site` chưa có số liệu; sẽ cập nhật sau spike "Đo baseline", đồng thời dùng làm phép thử cho việc cập nhật một case study đã có.
 - [ ] **Đo baseline** (ADR-001, ADR-004): chạy Lighthouse trước khi thêm bất kỳ island nào.
+- [ ] **Kiểm tra IA** (ADR-003, ADR-005): collection `tags` và tham chiếu từ `blog`, `relatedProjects`. Phần dấu `/` cuối đã xong. Danh sách việc ở [content-system.md — Spike kiểm chứng](./content-system.md#spike-kiểm-chứng).
 
 ## Điểm chưa kiểm chứng
 
 - Tùy chọn i18n của sitemap integration trên Astro v7.
 - Giới hạn và điều khoản hiện tại của dịch vụ bình luận, analytics, form cụ thể (ADR-004).
 - Khả năng headers và redirect của Cloudflare Pages / Netlify ở gói miễn phí (đường thoát của ADR-005).
+- Sau khi gắn custom domain, `lhlam2515.github.io/<đường dẫn>` có được chuyển 301 sang domain mới, giữ nguyên đường dẫn hay không. Nếu có, link đã chia sẻ trước đó vẫn sống; canonical tự đổi theo `SITE_URL` ở lần build kế tiếp. Nên gắn domain trước khi đăng bài thật để tránh phụ thuộc vào redirect này.
 - Ngưỡng cụ thể để bật tiếng Anh (ADR-006).
 
 ## Nguồn
