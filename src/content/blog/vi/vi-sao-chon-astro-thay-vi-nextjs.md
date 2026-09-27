@@ -4,6 +4,7 @@ description: "Next.js là stack tôi dùng hằng ngày, nhưng ở chế độ 
 slug: vi-sao-chon-astro-thay-vi-nextjs
 pubDate: 2026-09-27
 tags: [astro, nextjs, architecture]
+relatedProjects: [sojdev-site]
 ---
 
 Stack chính của tôi là Next.js và TypeScript. Khi bắt đầu làm site này, lựa chọn hiển nhiên là dựng thêm một app Next.js nữa. Tôi không làm vậy, và lý do nằm ở chỗ site sẽ chạy ở đâu chứ không nằm ở framework nào tốt hơn.

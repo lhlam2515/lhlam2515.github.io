@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
-import { defineCollection } from "astro:content";
-import { glob } from "astro/loaders";
+import { defineCollection, reference } from "astro:content";
+import { file, glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { slugSchema } from "./lib/slug";
 
@@ -37,8 +37,12 @@ const blog = defineCollection({
         slug: slugSchema,
         pubDate: z.coerce.date(),
         updatedDate: z.coerce.date().optional(),
-        // Tag sẽ thành URL /tags/[tag], nên cũng phải là slug.
-        tags: z.array(slugSchema).default([]),
+        // IA-002: chỉ tag đã khai báo trong collection `tags`, 1–4 tag mỗi bài.
+        // reference() chỉ đổi chuỗi thành { collection, id }; việc tag có tồn
+        // tại hay không được kiểm trong getPublishedPosts() (src/lib/content.ts).
+        tags: z.array(reference("tags")).min(1).max(4),
+        // IA-003: lưu một chiều từ bài sang dự án; chiều ngược tính lúc build.
+        relatedProjects: z.array(reference("projects")).optional(),
         draft: z.boolean().default(false),
         cover: image().optional(),
       })
@@ -75,4 +79,16 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { blog, projects };
+// IA-002: từ vựng tag có kiểm soát. Key trong YAML là slug tag (bất biến, là
+// thuật ngữ tiếng Anh); nhãn hiển thị theo ngôn ngữ.
+const tags = defineCollection({
+  loader: file("src/content/tags/tags.yaml"),
+  schema: z.object({
+    label: z.object({ vi: z.string() }),
+    description: z.string(),
+    // Hiện thành nút lọc ở đầu /blog/ và trên trang chủ.
+    featured: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, projects, tags };

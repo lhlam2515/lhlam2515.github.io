@@ -4,6 +4,7 @@ description: "Site chưa có bản tiếng Anh, nhưng URL là thứ đắt nh�
 slug: tieng-viet-o-goc-url
 pubDate: 2026-09-27
 tags: [i18n, astro, seo]
+relatedProjects: [sojdev-site]
 ---
 
 Blog này viết bằng tiếng Việt. Tiếng Anh có thể đến sau, khi tôi đã có thói quen viết đều. Nghe thì có vẻ chưa cần nghĩ tới chuyện đa ngôn ngữ. Nhưng có một thứ không thể để sau: URL.

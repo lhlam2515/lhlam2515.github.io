@@ -1,0 +1,31 @@
+# Từ vựng tag (IA-002). Key là slug: thuật ngữ tiếng Anh, chữ thường, nối bằng
+# gạch ngang, không bao giờ đổi sau khi có bài dùng nó. Thêm tag mới ở đây
+# trước, rồi mới gắn vào bài.
+architecture:
+  label: { vi: Kiến trúc }
+  description: Quyết định kiến trúc, ADR và trade-off.
+  featured: true
+requirements-engineering:
+  label: { vi: Kỹ thuật yêu cầu }
+  description: Thu thập, viết và kiểm chứng yêu cầu trước khi viết code.
+  featured: true
+testing:
+  label: { vi: Kiểm thử }
+  description: Chiến lược kiểm thử, quality gate và cách giữ phần mềm đúng khi thay đổi.
+  featured: true
+ai-agents:
+  label: { vi: AI agents }
+  description: Phát triển phần mềm có AI agent hỗ trợ, và những gì cần kiểm soát.
+  featured: true
+astro:
+  label: { vi: Astro }
+  description: Dựng site nội dung bằng Astro.
+nextjs:
+  label: { vi: Next.js }
+  description: Next.js và khi nào nó là lựa chọn phù hợp.
+i18n:
+  label: { vi: Đa ngôn ngữ }
+  description: URL, nội dung và cấu trúc site khi có nhiều ngôn ngữ.
+seo:
+  label: { vi: SEO }
+  description: URL bền, metadata và những gì giúp bài viết được tìm thấy.
