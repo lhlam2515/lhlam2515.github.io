@@ -245,12 +245,14 @@ Cần thêm:
 
 Spike "Kiểm tra IA" trong danh sách spike của architecture.md (spike "Kiểm tra schema" đã đóng):
 
-- [ ] Khai báo collection `tags` và tham chiếu từ `blog`; xác nhận build thất bại khi gắn tag chưa khai báo.
-- [ ] Viết 1 bài có `relatedProjects`; xác nhận trang dự án hiện mục "Bài viết liên quan".
+- [x] Khai báo collection `tags` và tham chiếu từ `blog`; xác nhận build thất bại khi gắn tag chưa khai báo. Kết quả ngày 27/09/2026: tag chưa khai báo, `relatedProjects` trỏ dự án không tồn tại, 0 tag và 5 tag đều làm build thất bại (thử trên data store sạch).
+- [x] Viết 1 bài có `relatedProjects`; xác nhận trang dự án hiện mục "Bài viết liên quan". Cả hai bài hiện có trỏ tới `sojdev-site`; `/projects/sojdev-site/` hiện mục "Bài viết về dự án này" với 2 bài.
 - [x] Kiểm tra URL không có dấu `/` cuối trên GitHub Pages thật được chuyển về dạng có dấu `/`. Kết quả ngày 27/09/2026:
   - GitHub Pages trả 301 từ `/versions` sang `/versions/` khi thư mục có `index.html` (đo trên `pages.github.com`, cũng chạy trên GitHub Pages). Site này chưa có trang con nên chưa đo trực tiếp được; đo lại trên `/blog` khi trang đó ra đời.
   - `trailingSlash` và `build.format` của Astro v7 khớp IA-001 nhưng không đủ: `trailingSlash` chỉ ràng buộc dev server và trang render theo yêu cầu; với trang prerender, host quyết định. Vì vậy quy ước được giữ bằng kiểm tra link lúc build.
 
 ## Điểm chưa kiểm chứng
 
-- Cách `reference()` của Astro v7 báo lỗi khi entry được tham chiếu không tồn tại: lúc sync schema hay chỉ khi gọi `getEntry()`. Nếu chỉ lúc gọi, cần thêm bước kiểm tra riêng.
+Không còn điểm nào. Điểm cuối cùng đã được kiểm chứng ngày 27/09/2026:
+
+- **`reference()` tới entry không tồn tại** (Astro 7.3.5): lúc sync, Astro log `[ERROR] Invalid content reference` nhưng vẫn build tiếp, và `getEntry()`/`getEntries()` trả `undefined`. Build chỉ thất bại nếu code render tình cờ đọc vào `undefined`, và bài `draft` không được render thì lọt qua. Vì vậy `getPublishedPosts()` trong `src/lib/content.ts` kiểm mọi tag và `relatedProjects` của mọi bài, kể cả draft, và throw với thông báo chỉ rõ file.
