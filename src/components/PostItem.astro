@@ -1,0 +1,49 @@
+---
+import type { Post } from "../lib/content";
+import { postUrl } from "../lib/content";
+import { formatDate, isoDate } from "../lib/format";
+
+/**
+ * Một dòng trong danh sách bài (IA-005): tiêu đề, ngày, description.
+ * Trang chủ đặt ngày lên trước tiêu đề (canvas Main); danh sách bài đặt sau.
+ */
+interface Props {
+  post: Post;
+  datePosition?: "before" | "after";
+}
+
+const { post, datePosition = "after" } = Astro.props;
+const { pubDate } = post.data;
+---
+
+<article class="post-item">
+  {datePosition === "before" && <time class="meta" datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>}
+  <h3><a class="title-link" href={postUrl(post)}>{post.data.title}</a></h3>
+  {datePosition === "after" && <time class="meta" datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>}
+  <p>{post.data.description}</p>
+</article>
+
+<style>
+  .post-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  h3 {
+    font-size: var(--fs-post-title);
+  }
+
+  p {
+    max-width: 680px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  @media (min-width: 768px) {
+    .post-item {
+      gap: var(--space-sm);
+    }
+  }
+</style>

@@ -1,0 +1,72 @@
+---
+import type { Post } from "../lib/content";
+import { groupByYear } from "../lib/content";
+import PostItem from "./PostItem.astro";
+
+/**
+ * Bài nhóm theo năm, mới nhất trước (IA-005). Dùng cho /blog/ và /tags/<tag>/.
+ * Cột năm 200 trên laptop, 120 trên tablet; mobile: năm thành tiêu đề phía
+ * trên nhóm bài (RD-005).
+ */
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const groups = groupByYear(posts);
+---
+
+<div class="years">
+  {
+    groups.map(({ year, posts }) => (
+      <section class="year" aria-labelledby={`y${year}`}>
+        <h2 id={`y${year}`}>{year}</h2>
+        <div class="posts">
+          {posts.map((post) => (
+            <PostItem post={post} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .years {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+
+  .year {
+    display: grid;
+    gap: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .posts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 768px) {
+    .year {
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: var(--space-lg);
+      padding-top: var(--space-xl);
+    }
+
+    .posts {
+      gap: 36px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .year {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: var(--space-2xl);
+    }
+  }
+</style>

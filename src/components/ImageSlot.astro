@@ -1,0 +1,61 @@
+---
+/**
+ * Ô ảnh giữ chỗ, như canvas thiết kế: khung nét đứt, nhãn và kích thước file
+ * gốc cần chuẩn bị (RD-006). Giữ tỉ lệ bằng aspect-ratio nên trang không nhảy
+ * khi ảnh thật thay vào.
+ *
+ * Khi có ảnh: thay phần giữ chỗ bằng <Picture> của astro:assets ở đây, các
+ * trang không phải sửa.
+ */
+interface Props {
+  label: string;
+  /** Kích thước file gốc, ví dụ "1600 × 1000". */
+  size: string;
+  /** Tỉ lệ khung, ví dụ "16 / 10". */
+  ratio: string;
+  /** Tỉ lệ dưới 768, nếu khác (chân dung 4:5 cắt 4:3 trên mobile). */
+  mobileRatio?: string;
+  class?: string;
+}
+
+const { label, size, ratio, mobileRatio = ratio, class: className } = Astro.props;
+---
+
+<div class:list={["slot", className]} role="img" aria-label={`Chỗ đặt ${label.toLowerCase()}`}>
+  <span class="label">{label}</span>
+  <span class="size">{size}</span>
+</div>
+
+<style define:vars={{ ratio, mobileRatio }}>
+  .slot {
+    aspect-ratio: var(--mobileRatio);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--bg-muted);
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .slot {
+      aspect-ratio: var(--ratio);
+    }
+  }
+
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fg-muted);
+  }
+
+  .size {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--fg-subtle);
+  }
+</style>

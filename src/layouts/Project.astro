@@ -1,0 +1,273 @@
+---
+import ImageSlot from "../components/ImageSlot.astro";
+import PostItem from "../components/PostItem.astro";
+import type { Project } from "../lib/content";
+import { getPostsForProject } from "../lib/content";
+import { SITE } from "../lib/site";
+import Base from "./Base.astro";
+
+/**
+ * Case study (ADR-003): phần tóm tắt problem → decisions → outcome lấy từ
+ * frontmatter, phần kể chi tiết là thân Markdown (slot) ở cuối.
+ */
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const posts = await getPostsForProject(project.id);
+const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(/\/$/, "");
+---
+
+<Base title={`${data.title} · Dự án · ${SITE.name}`} description={data.summary}>
+  <div class="container page case">
+    <header class="case-header">
+      <div class="page-intro">
+        <a class="text-link" href="/projects/">← Mọi dự án</a>
+        <p class="eyebrow">Case study</p>
+        <h1>{data.title}</h1>
+        <p class="lead case-lead">{data.summary}</p>
+      </div>
+      <dl class="facts">
+        <div>
+          <dt>Vai trò</dt>
+          <dd>{data.role}</dd>
+        </div>
+        <div>
+          <dt>Stack</dt>
+          <dd>
+            <ul class="stack">{data.stack.map((item) => <li>{item}</li>)}</ul>
+          </dd>
+        </div>
+        {
+          data.repoUrl && (
+            <div>
+              <dt>Mã nguồn</dt>
+              <dd><a href={data.repoUrl}>{host(data.repoUrl)}</a></dd>
+            </div>
+          )
+        }
+        {
+          data.liveUrl && (
+            <div>
+              <dt>Bản chạy</dt>
+              <dd><a href={data.liveUrl}>{host(data.liveUrl)}</a></dd>
+            </div>
+          )
+        }
+      </dl>
+    </header>
+
+    <ImageSlot label="Ảnh chụp trang chủ trên desktop" size="2400 × 1200" ratio="2 / 1" mobileRatio="16 / 10" />
+
+    <section class="narrow" aria-labelledby="problem">
+      <h2 id="problem">Vấn đề</h2>
+      <p class="prose">{data.problem}</p>
+    </section>
+
+    <section class="decisions-section" aria-labelledby="decisions">
+      <h2 id="decisions">Quyết định</h2>
+      <ol class="decisions">
+        {
+          data.decisions.map((decision, i) => (
+            <li>
+              <span class="num">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{decision.title}</h3>
+              <p>{decision.rationale}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="outcome" aria-labelledby="outcome">
+      <h2 id="outcome">Kết quả</h2>
+      <p class="prose">{data.outcome}</p>
+    </section>
+
+    <section class="narrow" aria-labelledby="details">
+      <h2 id="details">Chi tiết</h2>
+      <div class="prose details">
+        <slot />
+      </div>
+    </section>
+
+    {
+      posts.length > 0 && (
+        <section class="posts-section" aria-labelledby="rel">
+          <h2 id="rel">Bài viết về dự án này</h2>
+          <div class="posts">
+            {posts.map((post) => (
+              <PostItem post={post} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .case-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .case-header .text-link {
+    margin-bottom: calc(-1 * var(--space-sm));
+  }
+
+  /* eyebrow: chữ hoa, tracking 0.12em, màu link, chỉ đứng trên tiêu đề. */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--link);
+  }
+
+  .case-lead {
+    max-width: var(--measure);
+  }
+
+  /* Thông tin: 2 cột trên mobile và tablet, 4 cột trên laptop (RD-005). */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .facts > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .facts dt {
+    font-size: 14px;
+    color: var(--fg-subtle);
+  }
+
+  .facts dd {
+    font-size: 1rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .facts .stack {
+    font-size: 14px;
+    color: var(--fg);
+  }
+
+  .facts a {
+    text-underline-offset: 3px;
+  }
+
+  .narrow {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    max-width: var(--measure);
+  }
+
+  .decisions-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .decisions {
+    display: grid;
+    gap: var(--space-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .decisions li {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--link);
+  }
+
+  .decisions h3 {
+    font-size: 1.25rem;
+  }
+
+  .decisions p {
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  .outcome {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-subtle);
+  }
+
+  .outcome .prose {
+    max-width: var(--measure);
+  }
+
+  /* Thân Markdown lặp lại tiêu đề Vấn đề/Quyết định/Kết quả ở cấp h2; dưới "Chi tiết" chúng là cấp con. */
+  .details :global(h2) {
+    font-size: 1.25rem;
+  }
+
+  .posts-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .posts {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 768px) {
+    .decisions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .outcome {
+      padding: 40px;
+    }
+
+    .posts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-2xl);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .page.case {
+      padding-top: var(--space-2xl);
+    }
+
+    .facts {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

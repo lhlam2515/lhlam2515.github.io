@@ -1,0 +1,159 @@
+---
+import type { Project } from "../lib/content";
+import { projectUrl } from "../lib/content";
+import ImageSlot from "./ImageSlot.astro";
+
+/**
+ * Dự án lớn có ảnh chụp: ảnh 7 cột cạnh chữ 5 cột trên laptop, ảnh trên chữ
+ * dưới ở khoảng nhỏ hơn (RD-005). Ảnh luôn đứng trước trong HTML; `reverse`
+ * chỉ đổi vị trí bằng grid-column, không đổi thứ tự đọc.
+ *
+ * - `summary="table"` (trang chủ): bảng Vấn đề, Quyết định, Kết quả.
+ * - `summary="role"` (/projects/): vai trò phía trên tiêu đề.
+ */
+interface Props {
+  project: Project;
+  summary: "table" | "role";
+  reverse?: boolean;
+  headingLevel?: "h2" | "h3";
+}
+
+const { project, summary, reverse = false, headingLevel: Heading = "h3" } = Astro.props;
+const { data } = project;
+const url = projectUrl(project);
+---
+
+<article class:list={["feature", { reverse }]}>
+  <ImageSlot
+    class="shot"
+    label={`Ảnh chụp ${data.title}`}
+    size="1600 × 1000, mobile 800 × 500"
+    ratio="16 / 10"
+  />
+  <div class="body">
+    {summary === "role" && <p class="meta">{data.role}</p>}
+    <Heading class:list={["title", summary]}><a class="title-link" href={url}>{data.title}</a></Heading>
+    <p class="summary">{data.summary}</p>
+    {
+      summary === "table" && (
+        <dl>
+          <div>
+            <dt>Vấn đề</dt>
+            <dd>{data.problem}</dd>
+          </div>
+          <div>
+            <dt>Quyết định</dt>
+            <dd>{data.decisions.map((d) => d.title).join("; ")}.</dd>
+          </div>
+          <div>
+            <dt>Kết quả</dt>
+            <dd>{data.outcome}</dd>
+          </div>
+        </dl>
+      )
+    }
+    <ul class="stack" aria-label="Công nghệ">
+      {data.stack.map((item) => <li>{item}</li>)}
+    </ul>
+    <a class="text-link" href={url}>Đọc case study →</a>
+  </div>
+</article>
+
+<style>
+  .feature {
+    display: grid;
+    gap: var(--space-md);
+    align-items: center;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    min-width: 0;
+  }
+
+  .title.table {
+    font-size: var(--fs-h4);
+    letter-spacing: -0.01em;
+  }
+
+  .title.role {
+    font-size: var(--fs-h2);
+    letter-spacing: -0.01em;
+  }
+
+  .summary {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  /* Mobile và tablet: nhãn nằm trên nội dung. */
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  dl > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  dt {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--fg-subtle);
+  }
+
+  dd {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--fg);
+  }
+
+  @media (min-width: 768px) {
+    .feature {
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .feature {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-2xl);
+    }
+
+    .feature.reverse {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .feature.reverse :global(.shot) {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .feature.reverse .body {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .body {
+      gap: 20px;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      padding-top: 20px;
+    }
+
+    dl > div {
+      display: contents;
+    }
+  }
+</style>

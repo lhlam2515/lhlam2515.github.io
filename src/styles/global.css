@@ -1,0 +1,394 @@
+/*
+ * Nền chung của site: bố cục theo docs/responsive.md (RD-001 đến RD-003),
+ * chữ và trạng thái theo README của design system SoJDev.
+ *
+ * Breakpoint: 768 (`breakpoint-tablet`) và 1024 (`breakpoint-laptop`). Media
+ * query không đọc được biến CSS nên hai số này được viết trực tiếp.
+ */
+@import "./tokens.css";
+
+/* ---------- Biến bố cục theo khoảng màn hình (responsive.md, CSS nền) ---------- */
+
+:root {
+  --page-margin: var(--page-margin-narrow);
+  --gutter: var(--grid-gutter-mobile);
+  --section-gap: var(--space-2xl);
+  --header-h: var(--header-height-mobile);
+
+  --fs-post-title: 1.25rem;
+  --fs-prose: 1.0625rem;
+  --fs-code: 0.8125rem;
+
+  /* Hover của link: đậm hơn `link` một bậc trong cả hai theme. */
+  --link-hover: var(--primary-700);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { --link-hover: var(--primary-300); }
+}
+
+@media (min-width: 360px) {
+  :root { --page-margin: var(--page-margin-mobile); }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-margin: var(--page-margin-tablet);
+    --gutter: var(--grid-gutter);
+    --section-gap: var(--space-3xl);
+    --header-h: var(--header-height);
+    --fs-post-title: 1.375rem;
+    --fs-code: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root { --page-margin: var(--page-margin-laptop); }
+}
+
+/* ---------- Reset và nền ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+
+/* ---------- Chữ (type styles của design system) ---------- */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-display);
+  color: var(--fg-strong);
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.01em;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+}
+
+/* ---------- Link, focus, chuyển động ---------- */
+
+a {
+  color: var(--link);
+  transition:
+    color 120ms var(--ease),
+    background-color 120ms var(--ease),
+    border-color 120ms var(--ease);
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--page-margin);
+  top: -100px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--action);
+  color: var(--fg-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: var(--space-sm);
+  color: var(--fg-on-primary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Bố cục (RD-002) ---------- */
+
+.container {
+  width: min(var(--container), 100% - 2 * var(--page-margin));
+  margin-inline: auto;
+}
+
+/* Cột đọc: 720 căn giữa trên laptop, toàn chiều ngang trừ lề ở khoảng nhỏ hơn. */
+.container-measure {
+  width: min(var(--measure), 100% - 2 * var(--page-margin));
+  margin-inline: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns-mobile), minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+@media (min-width: 768px) {
+  .grid { grid-template-columns: repeat(var(--grid-columns-tablet), minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr)); }
+}
+
+/* Khung trang: đầu trang (tiêu đề + dẫn) rồi các section cách nhau --section-gap. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  padding-block: var(--space-xl) var(--section-gap);
+}
+
+@media (min-width: 768px) {
+  .page { padding-block: var(--space-3xl) var(--space-4xl); }
+}
+
+.page-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* body-lg: chữ dẫn dưới tiêu đề trang. */
+.lead {
+  max-width: 640px;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--fg-muted);
+}
+
+/* caption: ngày đăng, vai trò, số bài. */
+.meta {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+
+/* Danh sách stack của dự án: chữ mono, không phải tag (IA-003). */
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+/* Link chữ đứng riêng ("Xem dự án →", "← Mọi bài viết"): vùng chạm 44 (RD-004). */
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: var(--touch-target);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Tiêu đề là link: giữ màu tiêu đề, hover sang màu link. */
+.title-link {
+  color: var(--fg-strong);
+  text-decoration: none;
+}
+
+.title-link:hover {
+  color: var(--link);
+}
+
+/* ---------- Nội dung dài: bài viết và case study (prose) ---------- */
+
+.prose {
+  font-size: var(--fs-prose);
+  line-height: 1.75;
+  color: var(--fg);
+  overflow-wrap: break-word;
+}
+
+.prose > * + * {
+  margin-top: 1.25em;
+}
+
+.prose h2 {
+  margin-top: 2em;
+  font-size: 1.5rem;
+}
+
+.prose h3 {
+  margin-top: 1.75em;
+  font-size: 1.25rem;
+}
+
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.75em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose a {
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.prose strong {
+  color: var(--fg-strong);
+  font-weight: 600;
+}
+
+.prose blockquote {
+  padding-left: var(--space-md);
+  border-left: 2px solid var(--border-strong);
+  color: var(--fg-muted);
+}
+
+.prose :not(pre) > code {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+}
+
+/* Khối code cuộn ngang bên trong; trên mobile tràn sát mép, không bo góc (RD-005). */
+.prose pre {
+  margin-inline: calc(-1 * var(--page-margin));
+  padding: var(--space-md) var(--page-margin);
+  overflow-x: auto;
+  border-block: 1px solid var(--border);
+  background: var(--bg-muted) !important;
+  font-size: var(--fs-code);
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+@media (min-width: 768px) {
+  .prose pre {
+    margin-inline: 0;
+    padding: 20px var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+}
+
+/* Shiki xuất hai theme (astro.config.mjs); dark đổi màu token theo hệ điều hành. */
+@media (prefers-color-scheme: dark) {
+  .prose pre span {
+    color: var(--shiki-dark) !important;
+  }
+}
+
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}

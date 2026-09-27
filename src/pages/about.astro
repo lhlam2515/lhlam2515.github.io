@@ -1,0 +1,286 @@
+---
+import ButtonLink from "../components/ButtonLink.astro";
+import ImageSlot from "../components/ImageSlot.astro";
+import Base from "../layouts/Base.astro";
+import { CONTACT, SITE } from "../lib/site";
+
+const principles = [
+  { title: "Nghiệp vụ trước", text: "Bắt đầu từ vấn đề cần giải, không từ công nghệ muốn dùng." },
+  { title: "Kiến trúc vừa đủ", text: "Chọn giải pháp nhỏ nhất đáp ứng ràng buộc, và ghi rõ điều kiện để xem lại." },
+  { title: "Dễ đoán hơn khéo léo", text: "Code rõ ràng, có kiểu dữ liệu, thay vì trừu tượng thông minh." },
+  { title: "Bằng chứng trước khẳng định", text: "Kiểm chứng bằng spike và số đo, ghi rõ điều chưa kiểm chứng." },
+];
+
+// TODO(Lâm): thay placeholder bằng kinh nghiệm thật.
+const experience = [
+  { period: "[Từ] – [Đến]", role: "[Vị trí], [Công ty]", text: "[Một câu về hệ thống bạn đã xây và kết quả của nó.]" },
+  { period: "[Từ] – [Đến]", role: "[Vị trí], [Công ty]", text: "[Một câu về hệ thống bạn đã xây và kết quả của nó.]" },
+];
+
+const channels = [
+  { label: "GitHub", value: CONTACT.github.handle, href: CONTACT.github.url },
+  { label: "LinkedIn", value: CONTACT.linkedin.handle, href: CONTACT.linkedin.url },
+  { label: "RSS", value: CONTACT.rss, href: CONTACT.rss },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: SITE.author,
+  alternateName: SITE.name,
+  jobTitle: SITE.jobTitle,
+  url: new URL("/about/", Astro.site).href,
+  address: { "@type": "PostalAddress", addressLocality: "Thành phố Hồ Chí Minh", addressCountry: "VN" },
+  alumniOf: { "@type": "CollegeOrUniversity", name: "Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM" },
+  sameAs: [CONTACT.github.url, CONTACT.linkedin.url],
+};
+---
+
+<Base title={`Giới thiệu · ${SITE.name}`} description={SITE.tagline} jsonLd={jsonLd}>
+  <!--
+    Thứ tự HTML là thứ tự đọc trên mobile: tiêu đề, ảnh, kênh liên hệ, rồi nội
+    dung. Trên laptop grid đặt <aside> vào cột trái 400 bằng grid-column
+    (responsive.md, RD-005), không dùng order.
+  -->
+  <div class="container page about">
+    <div class="page-intro intro">
+      <h1>Giới thiệu</h1>
+      <p class="lead">
+        Tôi là {SITE.author}, fullstack web developer ở TP. Hồ Chí Minh. Tôi học Khoa học máy tính tại Trường Đại
+        học Khoa học Tự nhiên, ĐHQG-HCM.
+      </p>
+    </div>
+
+    <aside aria-label="Liên hệ">
+      <ImageSlot label="Ảnh chân dung" size="880 × 1100" ratio="4 / 5" mobileRatio="4 / 3" />
+      <div class="channels">
+        <ButtonLink href={`mailto:${CONTACT.email}`}>Email</ButtonLink>
+        <ul>
+          {
+            channels.map((c) => (
+              <li>
+                <a href={c.href}>
+                  <span>{c.label}</span>
+                  <span class="handle">{c.value}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </aside>
+
+    <div class="content">
+      <section aria-labelledby="what">
+        <h2 id="what">Tôi làm gì</h2>
+        <div class="prose">
+          <p>
+            Tôi làm cả backend lẫn frontend, và dành nhiều thời gian cho những phần trước và sau code: kỹ thuật yêu
+            cầu, kiểm thử, và quy trình phát triển có AI agent hỗ trợ.
+          </p>
+          <p>
+            Site này là một ví dụ: sáu quyết định kiến trúc được ghi thành ADR trước khi viết dòng code đầu tiên.
+            Xem <a href="/projects/sojdev-site/">case study</a>.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="how">
+        <h2 id="how">Cách tôi làm việc</h2>
+        <ul class="principles">
+          {
+            principles.map((p) => (
+              <li>
+                <h3>{p.title}</h3>
+                <p>{p.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="exp">
+        <h2 id="exp">Kinh nghiệm</h2>
+        <dl class="experience">
+          {
+            experience.map((e) => (
+              <div>
+                <dt class="meta">{e.period}</dt>
+                <dd>
+                  <span class="role">{e.role}</span>
+                  <p>{e.text}</p>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .page.about {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .channels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .channels ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .channels li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .channels a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    min-height: var(--touch-target);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .handle {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--fg-subtle);
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+    min-width: 0;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    max-width: 640px;
+  }
+
+  section h2 {
+    font-size: var(--fs-h4);
+  }
+
+  .principles {
+    display: grid;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .principles li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  .principles h3 {
+    font-size: 1.125rem;
+  }
+
+  .principles p,
+  .experience p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  .experience {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .experience > div {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .role {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  /* Tablet: ảnh 240 cạnh kênh liên hệ. */
+  @media (min-width: 768px) {
+    aside {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .principles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .experience > div {
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  /* Laptop: ảnh và kênh liên hệ ở cột trái 400. */
+  @media (min-width: 1024px) {
+    .page.about {
+      grid-template-columns: 400px minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      column-gap: 80px;
+      row-gap: var(--space-3xl);
+      align-items: start;
+    }
+
+    .intro,
+    .content {
+      grid-column: 2;
+    }
+
+    aside {
+      grid-column: 1;
+      grid-row: 1 / -1;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .content {
+      gap: var(--space-3xl);
+    }
+
+    section {
+      max-width: none;
+    }
+
+    .intro .lead {
+      font-size: 1.25rem;
+    }
+  }
+</style>

@@ -1,0 +1,66 @@
+---
+import { Font } from "astro:assets";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import { SITE } from "../lib/site";
+import "../styles/global.css";
+
+interface Props {
+  /** Nội dung `<title>` đầy đủ (content-system.md, Metadata theo loại trang). */
+  title: string;
+  description: string;
+  /** JSON-LD của trang, nếu có. */
+  jsonLd?: Record<string, unknown>;
+  ogType?: "website" | "article";
+  /** Trang chủ ghi đè khoảng cách section 96 từ 1024 (RD-002). */
+  home?: boolean;
+}
+
+const { title, description, jsonLd, ogType = "website", home = false } = Astro.props;
+// Canonical: URL tuyệt đối có dấu / cuối, dựng từ `site` (ADR-005).
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Blog`} href="/rss.xml" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-mono" />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body class:list={{ home }}>
+    <a class="skip-link" href="#content">Bỏ qua điều hướng</a>
+    <Header />
+    <main id="content">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  @media (min-width: 1024px) {
+    .home {
+      --section-gap: var(--space-4xl);
+    }
+  }
+</style>

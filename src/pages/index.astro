@@ -1,17 +1,206 @@
 ---
+import ButtonLink from "../components/ButtonLink.astro";
+import ContactBlock from "../components/ContactBlock.astro";
+import ImageSlot from "../components/ImageSlot.astro";
+import PostItem from "../components/PostItem.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import ProjectFeature from "../components/ProjectFeature.astro";
+import TopicNav from "../components/TopicNav.astro";
+import Base from "../layouts/Base.astro";
+import { getFeaturedProjects, getFeaturedTopics, getPublishedPosts } from "../lib/content";
+import { SITE } from "../lib/site";
 
+// IA-006: mọi khối lấy từ collection, trang chủ không có nội dung riêng.
+const [featured, topics, posts] = await Promise.all([getFeaturedProjects(), getFeaturedTopics(), getPublishedPosts()]);
+const [mainProject, ...otherProjects] = featured;
+const latest = posts.slice(0, 5);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  url: new URL("/", Astro.site).href,
+  inLanguage: "vi",
+  description: SITE.tagline,
+  author: { "@type": "Person", name: SITE.author },
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base title={SITE.name} description={SITE.tagline} jsonLd={jsonLd} home>
+  <div class="container page home-page">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-text">
+        <h1 id="hero-title">Hệ thống web <span class="accent">rõ ràng</span>, từ yêu cầu đến kiểm thử.</h1>
+        <p class="lead">
+          Tôi là {SITE.author}, fullstack web developer, viết về kiến trúc, yêu cầu, kiểm thử và AI agent.
+        </p>
+        <div class="hero-actions">
+          <ButtonLink href="/projects/">Xem dự án</ButtonLink>
+          <a class="text-link" href="/about/">Giới thiệu về tôi →</a>
+        </div>
+      </div>
+      <ImageSlot class="portrait" label="Ảnh chân dung" size="880 × 1100" ratio="4 / 5" mobileRatio="4 / 3" />
+    </section>
+
+    {
+      mainProject && (
+        <section class="work" aria-labelledby="work-title">
+          <div class="section-head">
+            <h2 id="work-title">Dự án tiêu biểu</h2>
+            <a class="text-link" href="/projects/">Mọi dự án →</a>
+          </div>
+          <ProjectFeature project={mainProject} summary="table" />
+          {otherProjects.length > 0 && (
+            <div class="more-projects">
+              {otherProjects.map((project) => (
+                <ProjectCard project={project} />
+              ))}
+            </div>
+          )}
+        </section>
+      )
+    }
+
+    <section class="writing" aria-labelledby="writing-title">
+      <h2 id="writing-title">Bài viết mới</h2>
+      {
+        topics.length > 0 && (
+          <div class="topics">
+            <TopicNav topics={topics} label="Chủ đề" layout="column" />
+          </div>
+        )
+      }
+      <div class="latest">
+        {latest.map((post) => <PostItem post={post} datePosition="before" />)}
+      </div>
+      <a class="text-link all-posts" href="/blog/">Mọi bài viết →</a>
+    </section>
+
+    <ContactBlock />
+  </div>
+</Base>
+
+<style>
+  .home-page {
+    padding-top: var(--space-2xl);
+  }
+
+  /* Hero: chữ và nút trước, ảnh sau trên mobile; 5/3 trên tablet; 7/5 trên laptop (RD-005). */
+  .hero {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .accent {
+    color: var(--link);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-lg);
+  }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 var(--space-md);
+  }
+
+  .work {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .more-projects {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  /*
+   * Bài viết mới. Thứ tự HTML là thứ tự đọc trên mobile: tiêu đề, chủ đề, bài,
+   * "Mọi bài viết". Dưới 1024 chủ đề là hàng nút phía trên danh sách; từ 1024
+   * grid đặt tiêu đề, chủ đề và link vào cột 320 bên trái (RD-005).
+   */
+  .writing {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .latest {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 768px) {
+    .home-page {
+      padding-top: 64px;
+    }
+
+    .hero {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 3fr);
+      gap: var(--gutter);
+      align-items: center;
+    }
+
+    .work {
+      gap: 40px;
+    }
+
+    .more-projects {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-2xl);
+    }
+
+    .latest {
+      gap: 40px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .home-page {
+      padding-top: 80px;
+    }
+
+    .hero {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-3xl);
+    }
+
+    .hero-text {
+      gap: var(--space-lg);
+    }
+
+    .hero-actions {
+      margin-top: var(--space-sm);
+    }
+
+    .writing {
+      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-rows: auto auto auto 1fr;
+      gap: var(--space-lg) 80px;
+      align-items: start;
+    }
+
+    .writing > :not(.latest) {
+      grid-column: 1;
+    }
+
+    .latest {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      padding-top: var(--space-sm);
+    }
+  }
+</style>

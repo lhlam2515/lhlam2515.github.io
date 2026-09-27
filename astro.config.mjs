@@ -1,5 +1,7 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import checkLinks from "./src/integrations/check-links.ts";
 
 // Domain không nằm trong code: ở CI, SITE_URL lấy từ `actions/configure-pages`,
@@ -22,5 +24,46 @@ export default defineConfig({
   // chọn một bên. URL là thứ bất biến (ADR-006), nên trùng phải làm build
   // thất bại. Slug trùng trong content được chặn riêng ở src/content.config.ts.
   prerenderConflictBehavior: "error",
-  integrations: [checkLinks()],
+  // Code trong bài có màu cho cả hai theme; nền khối code do .prose pre đặt
+  // (bg-muted), dark đổi màu qua prefers-color-scheme trong global.css.
+  markdown: {
+    shikiConfig: { themes: { light: "github-light", dark: "github-dark" } },
+  },
+  // Font của design system SoJDev: file variable lấy nguyên từ design system,
+  // tự host thay vì Google Fonts để giữ đủ glyph tiếng Việt (ADR-006).
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Space Grotesk",
+      cssVariable: "--font-display",
+      fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
+      options: {
+        variants: [{ src: ["./src/assets/fonts/SpaceGrotesk-VariableFont_wght.ttf"], weight: "300 700", style: "normal" }],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Geist",
+      cssVariable: "--font-body",
+      fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
+      options: {
+        variants: [{ src: ["./src/assets/fonts/Geist-VariableFont_wght.ttf"], weight: "100 900", style: "normal" }],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Cascadia Mono",
+      cssVariable: "--font-mono",
+      fallbacks: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      options: {
+        variants: [{ src: ["./src/assets/fonts/CascadiaMono-VariableFont_wght.ttf"], weight: "200 700", style: "normal" }],
+      },
+    },
+  ],
+  integrations: [
+    mdx(),
+    // Trang 404 không phải đích để index.
+    sitemap({ filter: (page) => !page.endsWith("/404/") && !page.endsWith("/404.html") }),
+    checkLinks(),
+  ],
 });

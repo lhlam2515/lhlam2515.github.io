@@ -1,0 +1,57 @@
+---
+/**
+ * Link trình bày như Button của design system (primary / secondary). Cao 44
+ * thay vì 40 của component để đạt vùng chạm tối thiểu (RD-004).
+ */
+interface Props {
+  href: string;
+  variant?: "primary" | "secondary";
+}
+
+const { href, variant = "primary" } = Astro.props;
+---
+
+<a class:list={["btn", variant]} href={href}><slot /></a>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    height: var(--touch-target);
+    padding: 0 20px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .primary {
+    background: var(--action);
+    color: var(--fg-on-primary);
+  }
+
+  .primary:hover {
+    background: var(--action-hover);
+    color: var(--fg-on-primary);
+  }
+
+  .primary:active {
+    background: var(--action-pressed);
+  }
+
+  .secondary {
+    background: var(--bg);
+    border-color: var(--link);
+    color: var(--link);
+  }
+
+  .secondary:hover {
+    background: var(--primary-tint);
+    color: var(--link);
+  }
+</style>

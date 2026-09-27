@@ -1,0 +1,91 @@
+---
+import type { Tag } from "../lib/content";
+import { tagUrl } from "../lib/content";
+
+/**
+ * Nút lọc chủ đề (IA-002, IA-005): link tới /tags/<tag>/, không lọc bằng JS.
+ * Xuống dòng khi hết chỗ, không cuộn ngang để không giấu chủ đề (RD-005).
+ *
+ * `layout="column"`: trên trang chủ từ 1024, danh sách dọc trong cột 320.
+ */
+interface Props {
+  topics: Tag[];
+  label?: string;
+  layout?: "row" | "column";
+}
+
+const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.props;
+---
+
+<nav aria-label={label} class:list={["topics", layout]}>
+  <ul>
+    {
+      topics.map((tag) => (
+        <li>
+          <a class="chip" href={tagUrl(tag)}>
+            {tag.data.label.vi}
+          </a>
+        </li>
+      ))
+    }
+    <slot />
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    height: var(--touch-target);
+    padding: 0 14px;
+    border: 1px solid var(--border-control);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .chip:hover {
+    background: var(--primary-tint);
+    color: var(--fg);
+  }
+
+  @media (min-width: 768px) {
+    .chip {
+      padding: 0 var(--space-md);
+    }
+  }
+
+  /* Trang chủ, laptop: cột chủ đề dạng danh sách chữ (RD-005). */
+  @media (min-width: 1024px) {
+    .column ul {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .column .chip {
+      padding: 0;
+      border: 0;
+      background: none;
+      font-size: 16px;
+    }
+
+    .column .chip:hover {
+      background: none;
+      color: var(--link);
+    }
+  }
+</style>

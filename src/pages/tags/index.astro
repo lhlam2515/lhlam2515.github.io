@@ -1,0 +1,85 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getTagsWithCounts, tagUrl } from "../../lib/content";
+import { SITE } from "../../lib/site";
+
+// IA-005: mọi tag có bài, kèm số bài, nhiều bài trước.
+const tags = await getTagsWithCounts();
+const lead = "Mọi chủ đề đã có bài đăng, xếp theo số bài.";
+---
+
+<Base title={`Chủ đề · ${SITE.name}`} description={lead}>
+  <div class="container page">
+    <div class="page-intro">
+      <h1>Chủ đề</h1>
+      <p class="lead">{lead}</p>
+    </div>
+    <ul class="tag-grid">
+      {
+        tags.map(({ tag, count }) => (
+          <li>
+            <div class="name">
+              <h2>
+                <a class="title-link" href={tagUrl(tag)}>{tag.data.label.vi}</a>
+              </h2>
+              <span class="meta">{count} bài</span>
+            </div>
+            <span class="path">{tagUrl(tag)}</span>
+            <p>{tag.data.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .tag-grid {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border);
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-block: var(--space-lg);
+    border-bottom: 1px solid var(--border);
+    min-width: 0;
+  }
+
+  .name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-xs) var(--space-md);
+  }
+
+  h2 a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+  }
+
+  .path {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--fg-subtle);
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  @media (min-width: 768px) {
+    .tag-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-2xl);
+    }
+  }
+</style>

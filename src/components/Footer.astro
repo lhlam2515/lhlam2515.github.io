@@ -1,0 +1,98 @@
+---
+import { CONTACT, SITE } from "../lib/site";
+
+// IA-004: RSS, GitHub, LinkedIn, email.
+const links = [
+  { label: "RSS", href: CONTACT.rss },
+  { label: "GitHub", href: CONTACT.github.url },
+  { label: "LinkedIn", href: CONTACT.linkedin.url },
+  { label: "Email", href: `mailto:${CONTACT.email}` },
+];
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <div class="about">
+      <span class="wordmark">{SITE.name}</span>
+      <p class="line">{SITE.author}, fullstack web developer tại TP. Hồ Chí Minh.</p>
+      <p class="meta">© {year}. Site tĩnh build bằng Astro, host trên GitHub Pages.</p>
+    </div>
+    <nav aria-label="Kênh liên hệ">
+      <ul>
+        {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+
+  .inner {
+    display: grid;
+    gap: var(--space-md) var(--space-lg);
+    padding-block: var(--space-xl);
+  }
+
+  .about {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--fg-strong);
+  }
+
+  .line {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin: 0 0 0 -12px;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    height: var(--touch-target);
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Laptop: một hàng, cao 160 (RD-005). */
+  @media (min-width: 1024px) {
+    .inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      min-height: 160px;
+      padding-block: var(--space-lg);
+    }
+
+    ul {
+      margin: 0;
+    }
+  }
+</style>

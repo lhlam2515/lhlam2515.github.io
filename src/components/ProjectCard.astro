@@ -1,0 +1,41 @@
+---
+import type { Project } from "../lib/content";
+import { projectUrl } from "../lib/content";
+
+/** Dự án phụ, không ảnh: vai trò, tiêu đề, summary, vài mục stack (IA-005). */
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+---
+
+<article class="card">
+  <p class="meta">{data.role}</p>
+  <h3><a class="title-link" href={projectUrl(project)}>{data.title}</a></h3>
+  <p class="summary">{data.summary}</p>
+  <ul class="stack" aria-label="Công nghệ">
+    {data.stack.slice(0, 4).map((item) => <li>{item}</li>)}
+  </ul>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  .summary {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+</style>
