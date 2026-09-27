@@ -5,16 +5,19 @@ export const SITE = {
   jobTitle: "Fullstack web developer",
   locale: "vi-VN",
   /** Câu định vị: description của trang chủ và trang Giới thiệu (content-system.md, Metadata). */
-  tagline: "Lê Hoàng Lâm, fullstack web developer, viết về kiến trúc, yêu cầu, kiểm thử và AI agent.",
+  tagline:
+    "Lê Hoàng Lâm, fullstack web developer, viết về kiến trúc, yêu cầu, kiểm thử và AI agent.",
 } as const;
 
 /**
  * Kênh liên hệ (IA-004: footer, khối liên hệ trang chủ, trang Giới thiệu).
- * TODO(Lâm): điền email và LinkedIn thật trước khi deploy.
  */
 export const CONTACT = {
-  email: "you@example.com",
-  linkedin: { url: "https://www.linkedin.com/in/your-handle/", handle: "your-handle" },
+  email: "lhlam2515@gmail.com",
+  linkedin: {
+    url: "https://www.linkedin.com/in/lhlam2515/",
+    handle: "lhlam2515",
+  },
   github: { url: "https://github.com/lhlam2515", handle: "lhlam2515" },
   rss: "/rss.xml",
 } as const;
