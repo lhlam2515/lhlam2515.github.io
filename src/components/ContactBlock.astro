@@ -13,6 +13,8 @@ import ButtonLink from "./ButtonLink.astro";
   <div class="text">
     <h2 id="contact-title">Liên hệ</h2>
     <p>Email là cách nhanh nhất để trao đổi về một vị trí hay một dự án.</p>
+    {/* Nút mailto: không làm gì khi máy không cài ứng dụng mail, nên địa chỉ phải chép được. */}
+    <p class="address">{CONTACT.email}</p>
   </div>
   <div class="actions">
     <ButtonLink href={`mailto:${CONTACT.email}`}>Email</ButtonLink>
@@ -46,6 +48,15 @@ import ButtonLink from "./ButtonLink.astro";
     max-width: 560px;
     line-height: 1.6;
     color: var(--fg-muted);
+  }
+
+  /* Một lần bấm chọn cả địa chỉ, không cần JS. */
+  .address {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    color: var(--fg);
+    overflow-wrap: anywhere;
+    user-select: all;
   }
 
   .actions {
