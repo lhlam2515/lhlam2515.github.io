@@ -18,7 +18,17 @@ const { data } = project;
 
 <div class="related-card">
   <a class="related-card__body" href={projectUrl(project)}>
-    <ImageSlot label={`Ảnh chụp ${data.title}`} size="800 × 500" ratio="16 / 10" />
+    {/* Ảnh desktop thu nhỏ: thẻ là thumbnail để nhận ra dự án qua bố cục, không cần đọc chữ (RD-006). */}
+    <ImageSlot
+      label={`Ảnh chụp ${data.title}`}
+      size="2400 × 1500"
+      ratio="16 / 10"
+      src={data.screenshot?.light}
+      darkSrc={data.screenshot?.dark}
+      frame
+      alt=""
+      sizes="(min-width: 768px) 200px, 100vw"
+    />
     <span class="text">
       <span class="title">{data.title}</span>
       <span class="summary">{data.summary}</span>
@@ -47,6 +57,10 @@ const { data } = project;
   .related-card__body:hover {
     border-color: var(--border-strong);
     color: inherit;
+  }
+
+  .related-card__body:hover :global(.slot) {
+    box-shadow: var(--shot-shadow-hover);
   }
 
   .related-card__body:hover .title {

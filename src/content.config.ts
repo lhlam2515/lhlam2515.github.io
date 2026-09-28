@@ -60,7 +60,7 @@ const text = (min: number, max: number) => z.string().min(min).max(max);
 
 const projects = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/projects/vi", generateId: slugId() }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     title: z.string(),
     summary: text(80, 200),
     slug: slugSchema,
@@ -83,6 +83,17 @@ const projects = defineCollection({
     updatedDate: z.coerce.date().optional(),
     repoUrl: z.url().optional(),
     liveUrl: z.url().optional(),
+    // RD-006: ảnh chụp giao diện desktop 2400 × 1500 (16:10), một file dùng cho
+    // mọi nơi: khung lớn nhất là đầu case study rộng 1200, cần gấp đôi cho màn
+    // retina. Bỏ trống thì hiện khung giữ chỗ. `dark` là bản chụp giao diện tối,
+    // hiện khi trang ở chế độ tối; dự án không có giao diện tối thì bỏ trống,
+    // ảnh sáng dùng cho cả hai chế độ.
+    screenshot: z
+      .object({
+        light: image(),
+        dark: image().optional(),
+      })
+      .optional(),
     featured: z.boolean().default(false),
     order: z.number().int(),
   }),

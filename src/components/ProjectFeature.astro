@@ -8,7 +8,8 @@ import ImageSlot from "./ImageSlot.astro";
  * dưới ở khoảng nhỏ hơn (RD-005). Ảnh luôn đứng trước trong HTML; `reverse`
  * chỉ đổi vị trí bằng grid-column, không đổi thứ tự đọc.
  *
- * - `summary="table"` (trang chủ): bảng Vấn đề, Quyết định, Kết quả.
+ * - `summary="table"` (trang chủ): bảng Vấn đề, Quyết định. Không có Kết quả:
+ *   `outcome` dài 150–350 ký tự làm thẻ quá dài để lướt, nên để ở case study.
  * - `summary="role"` (/projects/): vai trò phía trên tiêu đề.
  */
 interface Props {
@@ -24,15 +25,25 @@ const url = projectUrl(project);
 ---
 
 <article class:list={["feature", { reverse }]}>
-  <ImageSlot
-    class="shot"
-    label={`Ảnh chụp ${data.title}`}
-    size="1600 × 1000, mobile 800 × 500"
-    ratio="16 / 10"
-  />
+  {/* Ảnh bấm được như tiêu đề. Bỏ khỏi thứ tự tab và cây a11y vì trùng link tiêu đề. */}
+  <a class="shot" href={url} tabindex="-1" aria-hidden="true">
+    <ImageSlot
+      label={`Ảnh chụp ${data.title}`}
+      size="2400 × 1500"
+      ratio="16 / 10"
+      src={data.screenshot?.light}
+      darkSrc={data.screenshot?.dark}
+      frame
+      alt=""
+      sizes="(min-width: 1024px) 672px, 100vw"
+    />
+  </a>
   <div class="body">
     {summary === "role" && <p class="meta">{data.role}</p>}
-    <Heading class:list={["title", summary]}><a class="title-link" href={url}>{data.title}</a></Heading>
+    {/* Mũi tên thay link "Đọc case study" để thân khối đủ ngắn nằm cùng hàng với ảnh. */}
+    <Heading class:list={["title", summary]}>
+      <a class="title-link" href={url}>{data.title}<span class="arrow" aria-hidden="true">→</span></a>
+    </Heading>
     <p class="summary">{data.summary}</p>
     {
       summary === "table" && (
@@ -43,11 +54,19 @@ const url = projectUrl(project);
           </div>
           <div>
             <dt>Quyết định</dt>
-            <dd>{data.decisions.map((d) => d.title).join("; ")}.</dd>
-          </div>
-          <div>
-            <dt>Kết quả</dt>
-            <dd>{data.outcome}</dd>
+            <dd>
+              {/* Nhãn ngắn thay tên đầy đủ để lướt được, như mục lục case study (IA-007). */}
+              <ol class="decisions">
+                {data.decisions.map((d, i) => (
+                  <li>
+                    <span class="num" aria-hidden="true">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {d.label}
+                  </li>
+                ))}
+              </ol>
+            </dd>
           </div>
         </dl>
       )
@@ -55,15 +74,48 @@ const url = projectUrl(project);
     <ul class="stack" aria-label="Công nghệ">
       {data.stack.map((item) => <li>{item}</li>)}
     </ul>
-    <a class="text-link" href={url}>Đọc case study →</a>
   </div>
 </article>
 
 <style>
+  /* Căn đầu: cột chữ thường cao hơn ảnh, căn giữa để hở một khoảng trên ảnh. */
   .feature {
     display: grid;
     gap: var(--space-md);
-    align-items: center;
+    align-items: start;
+  }
+
+  .shot {
+    display: block;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Ảnh và tiêu đề cùng dẫn tới case study, nên hover một bên thì cả hai cùng
+     sáng: người dùng thấy cả khối bấm được dù không còn link chữ riêng. */
+  .feature:has(.shot:hover, .title-link:hover) :global(.slot) {
+    border-color: var(--link);
+    box-shadow: var(--shot-shadow-hover);
+  }
+
+  .feature:has(.shot:hover, .title-link:hover) .title-link {
+    color: var(--link);
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-left: 0.3em;
+    color: var(--link);
+    transition: transform 0.2s var(--ease);
+  }
+
+  .feature:has(.shot:hover, .title-link:hover) .arrow {
+    transform: translateX(var(--space-xs));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arrow {
+      transition: none;
+    }
   }
 
   .body {
@@ -89,7 +141,7 @@ const url = projectUrl(project);
     color: var(--fg-muted);
   }
 
-  /* Mobile và tablet: nhãn nằm trên nội dung. */
+  /* Mobile: nhãn nằm trên nội dung, hai mục xếp dọc. */
   dl {
     display: flex;
     flex-direction: column;
@@ -116,9 +168,38 @@ const url = projectUrl(project);
     color: var(--fg);
   }
 
+  .decisions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .decisions li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    color: var(--link);
+  }
+
   @media (min-width: 768px) {
     .feature {
       gap: var(--space-lg);
+    }
+
+    /* Tablet: ảnh nằm trên, thân khối rộng cả trang, nên Vấn đề và Quyết định
+       đứng cạnh nhau cho khối bớt cao; nhãn vẫn nằm trên nội dung. */
+    dl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-lg);
     }
   }
 
@@ -132,7 +213,7 @@ const url = projectUrl(project);
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     }
 
-    .feature.reverse :global(.shot) {
+    .feature.reverse .shot {
       grid-column: 2;
       grid-row: 1;
     }
@@ -142,13 +223,10 @@ const url = projectUrl(project);
       grid-row: 1;
     }
 
-    .body {
-      gap: var(--space-lg);
-    }
-
+    /* Laptop: nhãn thành cột trái 96, nội dung cột phải. */
     dl {
-      display: grid;
       grid-template-columns: 96px minmax(0, 1fr);
+      column-gap: var(--space-md);
     }
 
     dl > div {

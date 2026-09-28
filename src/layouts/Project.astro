@@ -24,6 +24,9 @@ const { project, headings } = Astro.props;
 const { data } = project;
 const posts = await getPostsForProject(project.id);
 const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(/\/$/, "");
+// Repo trên GitHub hiện dạng `owner/repo` như cách dev gọi tên repo; host khác
+// giữ nguyên host để người đọc biết mã nằm ở đâu.
+const repoName = (url: string) => (new URL(url).host === "github.com" ? host(url).replace(/^github\.com\//, "") : host(url));
 
 // Thân bài phải đã hạ cấp: mục `##` thành h3. Còn h2 nghĩa là plugin
 // caseStudyHeadings không chạy, và khi đó `depth === 3` lại bắt nhầm bốn phần
@@ -89,7 +92,7 @@ const toc: TocPart[] = [
           data.repoUrl && (
             <div>
               <dt>Mã nguồn</dt>
-              <dd><a href={data.repoUrl}>{host(data.repoUrl)}</a></dd>
+              <dd><a href={data.repoUrl}>{repoName(data.repoUrl)}</a></dd>
             </div>
           )
         }
@@ -104,10 +107,19 @@ const toc: TocPart[] = [
       </dl>
     </header>
 
-    <ImageSlot label="Ảnh chụp trang chủ trên desktop" size="2400 × 1200" ratio="2 / 1" mobileRatio="16 / 10" />
+    <ImageSlot
+      label={`Ảnh chụp ${data.title} trên desktop`}
+      size="2400 × 1500"
+      ratio="16 / 10"
+      src={data.screenshot?.light}
+      darkSrc={data.screenshot?.dark}
+      frame
+      loading="eager"
+      sizes="(min-width: 1280px) 1200px, 100vw"
+    />
 
     <div class="case-body">
-      <TableOfContents parts={toc} />
+      <TableOfContents parts={toc} title={data.title} />
 
       <div class="case-main">
         <section class="part" aria-labelledby="summary">

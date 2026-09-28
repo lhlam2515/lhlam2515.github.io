@@ -6,7 +6,7 @@
  * nhảy khi ảnh thật thay vào.
  */
 import type { ImageMetadata } from "astro";
-import { Picture } from "astro:assets";
+import { getImage, Picture } from "astro:assets";
 
 interface Props {
   label: string;
@@ -18,6 +18,10 @@ interface Props {
   mobileRatio?: string;
   /** Ảnh thật; bỏ trống thì hiện khung giữ chỗ. */
   src?: ImageMetadata;
+  /** Bản chụp giao diện tối của `src`, hiện khi trang ở chế độ tối. */
+  darkSrc?: ImageMetadata;
+  /** Viền 1px: ảnh chụp giao diện nền sáng không có mép, lẫn vào nền trang. */
+  frame?: boolean;
   /** Mô tả ảnh; mặc định là `label`. */
   alt?: string;
   /** object-position khi khung cắt ảnh, ví dụ "50% 20%" để giữ mặt. */
@@ -35,17 +39,65 @@ const {
   ratio,
   mobileRatio = ratio,
   src,
+  darkSrc,
+  frame = false,
   alt = label,
   position = "50% 50%",
   loading = "lazy",
   sizes = "100vw",
   class: className,
 } = Astro.props;
+
+// <Picture> chỉ nhận một ảnh nguồn, nên bản có ảnh tối tự dựng <picture> bằng
+// getImage(). Trình duyệt lấy <source> đầu tiên khớp media, nên bản tối đứng
+// trước. Ảnh tối chọn bằng prefers-color-scheme như màu của trang, không cần
+// JavaScript (ADR-004).
+const FORMATS = ["avif", "webp"] as const;
+// Thêm cỡ gốc để ảnh lớn hơn 1600 (ảnh đầu case study 2400) vẫn nét trên retina.
+const widthsOf = (img: ImageMetadata) =>
+  [...new Set([400, 800, 1200, 1600, img.width])].filter((w) => w <= img.width);
+const art =
+  src && darkSrc
+    ? {
+        sources: await Promise.all(
+          [
+            { img: darkSrc, media: "(prefers-color-scheme: dark)" },
+            { img: src, media: undefined },
+          ].flatMap(({ img, media }) =>
+            FORMATS.map(async (format) => ({
+              media,
+              type: `image/${format}`,
+              srcset: (await getImage({ src: img, format, widths: widthsOf(img) })).srcSet.attribute,
+            })),
+          ),
+        ),
+        fallback: await getImage({ src, widths: widthsOf(src) }),
+      }
+    : undefined;
 ---
 
 {
-  src ? (
-    <div class:list={["slot", "has-image", className]}>
+  art && src ? (
+    <div class:list={["slot", "has-image", { frame }, className]}>
+      <picture>
+        {art.sources.map((s) => (
+          <source media={s.media} type={s.type} srcset={s.srcset} sizes={sizes} />
+        ))}
+        <img
+          src={art.fallback.src}
+          srcset={art.fallback.srcSet.attribute}
+          sizes={sizes}
+          width={src.width}
+          height={src.height}
+          alt={alt}
+          loading={loading}
+          decoding="async"
+          fetchpriority={loading === "eager" ? "high" : undefined}
+        />
+      </picture>
+    </div>
+  ) : src ? (
+    <div class:list={["slot", "has-image", { frame }, className]}>
       <Picture
         src={src}
         alt={alt}
@@ -84,6 +136,34 @@ const {
     padding: 0;
     border: 0;
     overflow: hidden;
+  }
+
+  /* Shadow tách ảnh khỏi nền trang: ảnh chụp giao diện cùng màu nền với trang,
+     chỉ có viền thì vẫn lẫn. Thẻ bọc ảnh trong link dùng `--shot-shadow-hover`
+     khi hover. */
+  .has-image.frame {
+    --shot-shadow: var(--shadow-2);
+    --shot-shadow-hover: var(--shadow-3);
+    border: 1px solid var(--border);
+    box-shadow: var(--shot-shadow);
+    transition:
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease);
+  }
+
+  /* Bóng đen không hiện trên nền gần đen, nên chế độ tối thêm quầng màu nhấn. */
+  @media (prefers-color-scheme: dark) {
+    .has-image.frame {
+      --shot-shadow: var(--shadow-2), 0 0 32px var(--primary-tint);
+      --shot-shadow-hover: var(--shadow-3), 0 0 48px var(--primary-tint);
+      border-color: var(--border-strong);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .has-image.frame {
+      transition: none;
+    }
   }
 
   .has-image :global(picture),

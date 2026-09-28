@@ -9,9 +9,11 @@ export type TocPart = { id: string; text: string; items: TocItem[] };
 
 interface Props {
   parts: TocPart[];
+  /** Tên trang, mục đầu mục lục, trỏ về đầu trang. */
+  title?: string;
 }
 
-const { parts } = Astro.props;
+const { parts, title } = Astro.props;
 ---
 
 <!--
@@ -27,6 +29,8 @@ const { parts } = Astro.props;
       <p class="toc-label">Trên trang này</p>
       <a class="toc-close" href="#dong-muc-luc">Đóng</a>
     </div>
+    {/* `#top` không cần phần tử đích: trình duyệt cuộn về đầu tài liệu (chuẩn HTML). */}
+    {title && <a class="toc-title" href="#top">{title}</a>}
     <ol class="toc-parts">
       {
         parts.map((part) => (
@@ -161,6 +165,16 @@ const { parts } = Astro.props;
   }
 
   .toc-part {
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  /* Tên trang đứng trên cây mục, tách bằng vạch như tên phần tách khỏi mục con. */
+  .toc .toc-title {
+    padding-block: var(--space-xs);
+    margin-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-body);
     font-weight: 600;
     color: var(--fg-strong);
   }

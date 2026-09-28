@@ -34,7 +34,7 @@ Tỉ lệ thiết bị thật chưa có số liệu; cột thứ ba là giả đ
 | RD-003 | Cỡ chữ | Chỉ tiêu đề co giãn bằng `clamp()` | Có |
 | RD-004 | Điều hướng và tương tác | Không hamburger; vùng chạm tối thiểu 44 | Có |
 | RD-005 | Sắp xếp lại từng khối | Cùng nội dung, cùng thứ tự đọc | Có |
-| RD-006 | Ảnh | Giữ chỗ trước khi tải; ảnh chụp dự án có bản mobile | Có |
+| RD-006 | Ảnh | Giữ chỗ trước khi tải; ảnh chụp dự án có bản sáng và tối | Có |
 | RD-007 | Component dùng lại | Container query thay vì media query | Có |
 
 Không quyết định nào ở đây chạm URL, nên tất cả đảo ngược được.
@@ -148,7 +148,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | --- | --- | --- | --- |
 | Header | Logo trái, 3 mục phải, cao 72 | Như laptop | Cao 56, vẫn đủ 3 mục |
 | Hero trang chủ | Chữ 8 cột, ảnh chân dung 4 cột, tỉ lệ 4:5 | Chữ 5 cột, ảnh 3 cột | Chữ và nút trước, ảnh sau, cắt 4:3 |
-| Dự án nổi bật | Ảnh 7 cột cạnh chữ 5 cột | Ảnh trên, chữ dưới | Như tablet; bảng Vấn đề, Quyết định, Kết quả xếp nhãn trên nội dung |
+| Dự án nổi bật | Ảnh 7 cột cạnh chữ 5 cột | Ảnh trên, chữ dưới | Như tablet; bảng Vấn đề, Quyết định xếp nhãn trên nội dung |
 | Dự án phụ, danh sách chủ đề | 2 cột | 2 cột | 1 cột |
 | Trang `/projects/` | So le: ảnh trái rồi ảnh phải | Xếp chồng, ảnh luôn ở trên | Như tablet |
 | Bài viết mới (trang chủ) | Cột chủ đề 320 cạnh danh sách bài | Chủ đề thành một hàng nút phía trên danh sách | Như tablet, nút xuống dòng khi hết chỗ |
@@ -180,14 +180,13 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 
 - **Mọi ảnh giữ chỗ trước khi tải:** có `width` và `height` (hoặc `aspect-ratio`) để trang không nhảy.
 - **Nhiều kích thước:** xuất các cỡ 400, 800, 1200, 1600; `sizes` phải khớp độ rộng cột thật ở từng khoảng. Dùng `<Image>` và `<Picture>` của `astro:assets`, thuộc tính `layout` để Astro sinh `srcset` và `sizes`; ghi đè `sizes` khi ảnh nằm trong lưới hẹp hơn chiều ngang trang.
-- **Ảnh chụp dự án có bản mobile riêng.** Ảnh chụp desktop thu nhỏ còn khoảng 342 thì không đọc được chữ, nên dùng `<picture>` với `<source media="(max-width: 767px)">` trỏ tới ảnh chụp giao diện mobile.
+- **Ảnh chụp dự án chỉ có bản desktop, thu nhỏ ở mọi độ rộng.** Dưới 768 và trong thẻ dự án liên quan (200 đến khoảng 340), chữ trong ảnh không đọc được, nhưng ảnh chỉ cần cho nhận ra bố cục trang của dự án; chữ đọc được đã có ở phần mô tả bên cạnh. Trước đó dùng ảnh chụp giao diện mobile riêng dưới 768; bỏ vì thêm một file phải chụp và giữ khớp cho mỗi dự án mà không đổi được gì người đọc cần (28/09/2026). Ảnh chụp giao diện có viền 1px và shadow (`frame`), vì nền của ảnh trùng nền trang nên không có mép. Chế độ tối thêm quầng `--primary-tint`, vì bóng đen không hiện trên nền gần đen. Ảnh ở khối dự án tiêu biểu là link tới case study, bỏ khỏi thứ tự tab vì trùng link tiêu đề. Khối không có link chữ "Đọc case study" để thân khối vừa chiều cao ảnh; thay vào đó tiêu đề có mũi tên màu link, và hover ảnh hay tiêu đề thì cả hai cùng sáng: shadow đậm hơn, viền ảnh và tiêu đề đổi màu link, mũi tên nhích sang phải (28/09/2026).
+- **Ảnh chụp dự án có bản tối (tuỳ chọn).** Khai báo ở `screenshot.light` và `screenshot.dark`; `ImageSlot` thêm `<source media="(prefers-color-scheme: dark)">`, nên ảnh đổi theo chế độ màu giống phần còn lại của trang, không cần JavaScript. `<Picture>` của Astro 7.3.5 chỉ nhận một ảnh nguồn nên `ImageSlot` tự dựng `<picture>` bằng `getImage()`. Dự án không có giao diện tối thì bỏ trống, ảnh sáng dùng cho cả hai chế độ. Một cặp ảnh 16:10 dùng cho mọi nơi, kể cả đầu case study (khung rộng tới 1200, nên file 2400 × 1500 đủ nét trên retina); trước đó đầu case study dùng khung 2:1 với file riêng 2400 × 1200, bỏ vì mỗi dự án phải chụp hai bộ ảnh khác tỉ lệ và khung 2:1 cắt mất nội dung. Hai bản chụp cùng khung: viewport 1280 × 800, tỉ lệ điểm ảnh 1.875 (28/09/2026).
 - **Ảnh chân dung** dùng một file tỉ lệ 4:5; trên mobile cắt 4:3 bằng `object-fit: cover` căn trên, không cần file thứ hai.
 | Ảnh | Kích thước gốc cần chuẩn bị |
 | --- | --- |
 | Chân dung | 880 × 1100 |
-| Ảnh chụp dự án, desktop | 1600 × 1000 |
-| Ảnh chụp dự án, mobile | 800 × 500 (cắt từ ảnh chụp giao diện 390) |
-| Ảnh chụp trang chủ trong case study | 2400 × 1200 |
+| Ảnh chụp dự án (sáng, tối) | 2400 × 1500 |
 
 ### Hệ quả
 

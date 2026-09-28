@@ -21,6 +21,9 @@ decisions:
 outcome: "Site chạy trên GitHub Pages với 0 đồng và không có server. Slug có dấu hoặc trùng, tag chưa khai báo, tham chiếu tới dự án không tồn tại và link nội bộ sai dạng đều làm build thất bại trước khi deploy. Chưa đo: hiệu năng, và độ bền của URL khi gắn custom domain."
 repoUrl: "https://github.com/lhlam2515/lhlam2515.github.io"
 liveUrl: "https://lhlam2515.github.io"
+screenshot:
+  light: "../../../assets/projects/sojdev-site.png"
+  dark: "../../../assets/projects/sojdev-site-dark.png"
 featured: true
 order: 1
 ---

@@ -194,7 +194,7 @@ Trang chủ không có nội dung riêng; mọi khối đều lấy từ collect
 
 Người đọc chính của case study là nhà tuyển dụng và tech lead. Họ cần thấy quá trình suy luận: vấn đề là gì, đã cân nhắc những phương án nào, vì sao chọn, cái giá là gì, và bằng chứng nào cho thấy lựa chọn đó đúng. Một danh sách tính năng không cho thấy điều đó.
 
-Trang `/projects/<slug>/` hiển thị cả hai phần trên cùng một trang: frontmatter thành các mục Vấn đề, Quyết định, Kết quả; thân bài nằm bên dưới (`src/layouts/Project.astro`). Bảng Vấn đề / Quyết định / Kết quả trên trang chủ cũng lấy từ frontmatter.
+Trang `/projects/<slug>/` hiển thị cả hai phần trên cùng một trang: frontmatter thành các mục Vấn đề, Quyết định, Kết quả; thân bài nằm bên dưới (`src/layouts/Project.astro`). Bảng Vấn đề / Quyết định trên trang chủ cũng lấy từ frontmatter; Kết quả không đưa lên trang chủ vì làm thẻ dự án quá dài để lướt (28/09/2026).
 
 Case study đầu tiên (`sojdev-site`, bản ngày 27/09/2026) cho thấy điều gì xảy ra khi hai phần không có vai trò rõ:
 
@@ -285,6 +285,7 @@ Mọi thay đổi dưới đây đã áp dụng. Với `projects` (IA-007, áp d
 | `projects` | Giới hạn độ dài cho `summary`, `problem`, `outcome`, `decisions[].title`, `decisions[].rationale` | IA-007 |
 | `projects` | `updatedDate?`, vì `outcome` sẽ được cập nhật khi có số đo | IA-007 |
 | `projects` | `decisions[].label` bắt buộc, 8–28 ký tự, nhãn trong mục lục | IA-007 |
+| `projects` | `screenshot?`: `light` và `dark?` (2400 × 1500, 16:10), một cặp ảnh dùng cho mọi nơi; thiếu thì hiện khung giữ chỗ (28/09/2026) | RD-006 |
 
 Các bài hiện có đều có 2–3 tag nên đã thoả giới hạn 1–4. Khi tạo collection `tags`, phải khai báo đủ các tag đang dùng: `architecture`, `astro`, `i18n`, `nextjs`, `seo`.
 
