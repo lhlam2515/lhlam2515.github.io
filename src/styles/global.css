@@ -130,6 +130,11 @@ h2 {
   letter-spacing: -0.01em;
 }
 
+/* Tiêu đề nhảy tới từ mục lục hay link sâu không dính sát mép trên màn hình. */
+:is(h2, h3)[id] {
+  scroll-margin-top: var(--space-xl);
+}
+
 code,
 kbd,
 pre {

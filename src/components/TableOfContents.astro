@@ -1,0 +1,295 @@
+---
+/**
+ * Mục lục trong trang (RD-004): cột phải cố định trong màn hình từ 1024; dưới
+ * 1024 là nút nổi mở bảng mục lục. Trang dùng component tự đặt nó vào cột phải
+ * của lưới ở 1024, vì lưới thuộc về trang.
+ */
+export type TocItem = { id: string; text: string; num?: string };
+export type TocPart = { id: string; text: string; items: TocItem[] };
+
+interface Props {
+  parts: TocPart[];
+}
+
+const { parts } = Astro.props;
+---
+
+<!--
+  Dưới 1024 mục lục ẩn; nút nổi "Mục lục" trỏ tới #toc, và :target mở nó thành
+  bảng nổi. Chọn một mục thì URL đổi sang mục đó, #toc hết là :target nên bảng
+  tự đóng; không cần JavaScript. `#dong-muc-luc` không trỏ tới phần tử nào, nên
+  "Đóng" chỉ bỏ :target mà không cuộn trang.
+-->
+<nav class="toc" id="toc" aria-label="Mục lục">
+  <a class="toc-backdrop" href="#dong-muc-luc" tabindex="-1" aria-hidden="true"></a>
+  <div class="toc-panel">
+    <div class="toc-head">
+      <p class="toc-label">Trên trang này</p>
+      <a class="toc-close" href="#dong-muc-luc">Đóng</a>
+    </div>
+    <ol class="toc-parts">
+      {
+        parts.map((part) => (
+          <li>
+            <a class="toc-part" href={`#${part.id}`}>{part.text}</a>
+            {part.items.length > 0 && (
+              <ol class="toc-items">
+                {part.items.map((item) => (
+                  <li>
+                    <a href={`#${item.id}`}>
+                      {item.num && <span class="toc-num" aria-hidden="true">{item.num}</span>}
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</nav>
+
+<a class="toc-fab" href="#toc">
+  <span class="toc-fab-icon" aria-hidden="true"></span>
+  <span class="visually-hidden">Mục lục</span>
+</a>
+
+<style>
+  /*
+   * Lớp nổi (bảng mục lục, nút nổi) đè lên chữ nên phải đục. `--surface` của
+   * theme tối trong suốt 80% có chủ ý cho thẻ nằm trên nền trang; phủ nó lên
+   * `--bg` cho đúng màu đó nhưng không để chữ phía sau lộ qua.
+   */
+  .toc,
+  .toc-fab {
+    --surface-solid: linear-gradient(var(--surface), var(--surface)) var(--bg);
+  }
+
+  /*
+   * Dưới 1024: mục lục ẩn cho tới khi nút nổi "Mục lục" làm #toc thành
+   * :target. Khi đó nó phủ cả màn hình: lớp nền mờ (bấm vào là đóng) và bảng
+   * danh sách neo ở góc dưới phải, chỗ của nút nổi.
+   */
+  .toc {
+    display: none;
+  }
+
+  .toc:target {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+  }
+
+  /* Trang phía sau không cuộn khi bảng đang mở. */
+  :global(html:has(#toc:target)) {
+    overflow: hidden;
+  }
+
+  /* Nền mờ theo màu nền của theme, nên đúng ở cả sáng lẫn tối. */
+  .toc-backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+  }
+
+  .toc-panel {
+    position: absolute;
+    right: var(--page-margin);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+    width: min(24rem, 100% - 2 * var(--page-margin));
+    max-height: calc(100% - 2 * var(--space-xl));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--space-md) var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-3);
+  }
+
+  .toc-head {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-solid);
+  }
+
+  .toc-label {
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  .toc .toc-close {
+    padding-inline: var(--space-sm);
+    margin-right: calc(-1 * var(--space-sm));
+    font-weight: 600;
+    color: var(--link);
+  }
+
+  /*
+   * Mục lục theo cây heading: tên phần (h2) đậm, sát lề; mục con (h3) thụt vào
+   * sau một vạch dọc. Mọi mục một dòng cao 44 (vùng chạm của RD-004), nên
+   * nhịp đều.
+   */
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc-parts {
+    padding-bottom: var(--space-md);
+  }
+
+  .toc a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--touch-target);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .toc-part {
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  /* Viền trái nằm ở danh sách con; mục đang hover phủ lên nó một vạch màu link. */
+  .toc-items {
+    margin-bottom: var(--space-sm);
+    border-left: 1px solid var(--border);
+  }
+
+  .toc-items a {
+    margin-left: -1px;
+    padding-left: var(--space-md);
+    border-left: 1px solid transparent;
+    color: var(--fg-muted);
+  }
+
+  .toc a:hover {
+    color: var(--link);
+  }
+
+  .toc-items a:hover {
+    border-left-color: var(--link);
+  }
+
+  .toc-num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    color: var(--fg-subtle);
+  }
+
+  /*
+   * Nút nổi mở mục lục, dưới 1024 (từ 1024 mục lục đã luôn hiện bên phải).
+   * `fixed` để nút luôn ở góc màn hình, kể cả khi đã cuộn tới footer; nút
+   * thẳng hàng với lề phải của nội dung.
+   */
+  .toc-fab {
+    position: fixed;
+    right: var(--page-margin);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-2);
+    color: var(--fg-strong);
+  }
+
+  /* Cuối trang, nút nằm trên footer: chừa dưới footer đúng chỗ của nút
+     (khoảng dưới + 44 + khoảng trên), để hàng link cuối không bị nút che. */
+  :global(body:has(.toc-fab) .site-footer .inner) {
+    padding-bottom: calc(2 * var(--space-md) + var(--touch-target));
+  }
+
+  .toc-fab:hover {
+    border-color: var(--border-strong);
+    color: var(--link);
+  }
+
+  /* Icon hamburger dựng bằng CSS (dự án không có thư viện icon): vạch giữa là
+     chính phần tử, hai vạch trên dưới là bóng cách nó 2 px + space-xs. */
+  .toc-fab-icon {
+    width: 1.125rem;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    box-shadow:
+      0 calc(-2px - var(--space-xs)) 0 currentColor,
+      0 calc(2px + var(--space-xs)) 0 currentColor;
+  }
+
+  /*
+   * Laptop: mục lục thành cột cố định trong màn hình. Bảng nổi, nền mờ, nút
+   * "Đóng" và nút nổi không còn việc gì; `.toc:target` cũng về dạng cột, phòng
+   * khi URL còn #toc.
+   */
+  @media (min-width: 1024px) {
+    .toc,
+    .toc:target {
+      display: block;
+      position: sticky;
+      inset: auto;
+      top: var(--space-xl);
+      z-index: auto;
+      max-height: calc(100vh - 2 * var(--space-xl));
+      overflow-y: auto;
+    }
+
+    :global(html:has(#toc:target)) {
+      overflow: visible;
+    }
+
+    /* Không còn nút nổi: trả footer về padding của chính nó ở laptop (Footer.astro). */
+    :global(body:has(.toc-fab) .site-footer .inner) {
+      padding-bottom: var(--space-lg);
+    }
+
+    /* `.toc` đứng trước để thắng `.toc a { display: flex }`. */
+    .toc .toc-backdrop,
+    .toc .toc-close,
+    .toc-fab {
+      display: none;
+    }
+
+    .toc-panel {
+      position: static;
+      width: auto;
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+
+    .toc-head {
+      position: static;
+      margin-bottom: var(--space-sm);
+      border: 0;
+      background: none;
+    }
+
+    .toc-parts {
+      padding-bottom: 0;
+    }
+  }
+</style>
