@@ -1,4 +1,5 @@
 ---
+import type { MarkdownHeading } from "astro";
 import ImageSlot from "../components/ImageSlot.astro";
 import PostItem from "../components/PostItem.astro";
 import type { Project } from "../lib/content";
@@ -7,19 +8,61 @@ import { SITE } from "../lib/site";
 import Base from "./Base.astro";
 
 /**
- * Case study (ADR-003): phần tóm tắt problem → decisions → outcome lấy từ
- * frontmatter, phần bằng chứng là thân Markdown (slot) ở cuối (IA-007). Thân
- * bài không có tiêu đề bọc ngoài: các mục `##` của nó ngang cấp với Vấn đề /
- * Quyết định / Kết quả trong cây heading.
+ * Case study (ADR-003, IA-007): hai phần ở cấp h2. "Tóm tắt" lấy từ frontmatter
+ * (Vấn đề, Quyết định, Kết quả là h3); "Chi tiết" là thân Markdown, có heading
+ * đã được hạ một cấp lúc render (src/lib/markdown-headings.ts): mục `##` thành
+ * h3. Bốn phần của quyết định là chữ in đậm đầu đoạn, không phải heading.
  */
 interface Props {
   project: Project;
+  /** Heading của thân bài, từ render(); dựng mục lục và link từ thẻ quyết định. */
+  headings: MarkdownHeading[];
 }
 
-const { project } = Astro.props;
+const { project, headings } = Astro.props;
 const { data } = project;
 const posts = await getPostsForProject(project.id);
 const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(/\/$/, "");
+
+// Thân bài phải đã hạ cấp: mục `##` thành h3. Còn h2 nghĩa là plugin
+// caseStudyHeadings không chạy, và khi đó `depth === 3` lại bắt nhầm bốn phần
+// của quyết định; trang cũng có h2 nằm trong h2 "Chi tiết". Dừng thay vì dựng
+// mục lục sai.
+const bodyTop = Math.min(...headings.map((h) => h.depth));
+if (headings.length > 0 && bodyTop !== 3) {
+  throw new Error(
+    `${project.filePath}: heading thân bài bắt đầu ở h${bodyTop}, cần h3 (IA-007). ` +
+      "Plugin caseStudyHeadings trong astro.config.mjs không chạy; nếu vừa đổi astro.config.mjs, khởi động lại dev server.",
+  );
+}
+
+// IA-007: mục lục gồm các mục h3 của thân bài. Mỗi quyết định có một mục cùng
+// tên, nên thẻ quyết định và mục lục link thẳng xuống bằng chứng.
+const sections = headings.filter((h) => h.depth === 3);
+const evidenceId = new Map(sections.map((h) => [h.text, h.slug]));
+const decisionIndex = new Map(data.decisions.map((d, i) => [d.title, i]));
+const num = (i: number) => String(i + 1).padStart(2, "0");
+
+// Mục lục theo cây heading của trang. Quyết định hiện bằng `label` ngắn để mọi
+// mục một dòng, nhịp đều nhau; tên đầy đủ vẫn là heading ở đích.
+type TocItem = { id: string; text: string; num?: string };
+const detailItems: TocItem[] = sections.map((h) => {
+  const i = decisionIndex.get(h.text);
+  return i === undefined ? { id: h.slug, text: h.text } : { id: h.slug, text: data.decisions[i].label, num: num(i) };
+});
+const toc: { id: string; text: string; items: TocItem[] }[] = [
+  {
+    id: "summary",
+    text: "Tóm tắt",
+    items: [
+      { id: "problem", text: "Vấn đề" },
+      { id: "decisions", text: "Quyết định" },
+      { id: "outcome", text: "Kết quả" },
+    ],
+  },
+  { id: "details", text: "Chi tiết", items: detailItems },
+  ...(posts.length > 0 ? [{ id: "rel", text: "Bài viết về dự án này", items: [] }] : []),
+];
 ---
 
 <Base title={`${data.title} · Dự án · ${SITE.name}`} description={data.summary}>
@@ -63,47 +106,108 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
 
     <ImageSlot label="Ảnh chụp trang chủ trên desktop" size="2400 × 1200" ratio="2 / 1" mobileRatio="16 / 10" />
 
-    <section class="narrow" aria-labelledby="problem">
-      <h2 id="problem">Vấn đề</h2>
-      <p class="prose">{data.problem}</p>
-    </section>
+    <div class="case-body">
+      <!--
+        Từ 1024 grid đưa mục lục sang cột phải và giữ nó trong màn hình. Dưới
+        1024 nó ẩn; nút nổi "Mục lục" trỏ tới #toc, và :target mở nó thành bảng
+        nổi. Chọn một mục thì URL đổi sang mục đó, #toc hết là :target nên bảng
+        tự đóng; không cần JavaScript. `#dong-muc-luc` không trỏ tới phần tử nào,
+        nên "Đóng" chỉ bỏ :target mà không cuộn trang.
+      -->
+      <nav class="toc" id="toc" aria-label="Mục lục">
+        <a class="toc-backdrop" href="#dong-muc-luc" tabindex="-1" aria-hidden="true"></a>
+        <div class="toc-panel">
+          <div class="toc-head">
+            <p class="toc-label">Trên trang này</p>
+            <a class="toc-close" href="#dong-muc-luc">Đóng</a>
+          </div>
+          <ol class="toc-parts">
+            {
+              toc.map((part) => (
+                <li>
+                  <a class="toc-part" href={`#${part.id}`}>{part.text}</a>
+                  {part.items.length > 0 && (
+                    <ol class="toc-items">
+                      {part.items.map((item) => (
+                        <li>
+                          <a href={`#${item.id}`}>
+                            {item.num && <span class="toc-num" aria-hidden="true">{item.num}</span>}
+                            {item.text}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </nav>
 
-    <section class="decisions-section" aria-labelledby="decisions">
-      <h2 id="decisions">Quyết định</h2>
-      <ol class="decisions">
-        {
-          data.decisions.map((decision, i) => (
-            <li>
-              <span class="num">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{decision.title}</h3>
-              <p>{decision.rationale}</p>
-            </li>
-          ))
-        }
-      </ol>
-    </section>
+      <div class="case-main">
+        <section class="part" aria-labelledby="summary">
+          <h2 id="summary" class="part-title">Tóm tắt</h2>
 
-    <section class="outcome" aria-labelledby="outcome">
-      <h2 id="outcome">Kết quả</h2>
-      <p class="prose">{data.outcome}</p>
-    </section>
+          <section class="narrow">
+            <h3 id="problem">Vấn đề</h3>
+            <p class="prose">{data.problem}</p>
+          </section>
 
-    <div class="prose details">
-      <slot />
-    </div>
+          <section class="decisions-section">
+            <h3 id="decisions">Quyết định</h3>
+            <!-- Tên quyết định ở đây là link, không phải heading: heading của nó
+                 nằm ở phần Chi tiết, nên mỗi tên chỉ có một chỗ trong cây heading. -->
+            <ol class="decisions">
+              {
+                data.decisions.map((decision, i) => {
+                  const id = evidenceId.get(decision.title);
+                  return (
+                    <li>
+                      <span class="num" aria-hidden="true">{num(i)}</span>
+                      <p class="decision-title">
+                        {id ? <a class="evidence-link" href={`#${id}`}>{decision.title}</a> : decision.title}
+                      </p>
+                      <p>{decision.rationale}</p>
+                    </li>
+                  );
+                })
+              }
+            </ol>
+          </section>
 
-    {
-      posts.length > 0 && (
-        <section class="posts-section" aria-labelledby="rel">
-          <h2 id="rel">Bài viết về dự án này</h2>
-          <div class="posts">
-            {posts.map((post) => (
-              <PostItem post={post} />
-            ))}
+          <section class="outcome">
+            <h3 id="outcome">Kết quả</h3>
+            <p class="prose">{data.outcome}</p>
+          </section>
+        </section>
+
+        <section class="part" aria-labelledby="details">
+          <h2 id="details" class="part-title">Chi tiết</h2>
+          <div class="prose details">
+            <slot />
           </div>
         </section>
-      )
-    }
+
+        {
+          posts.length > 0 && (
+            <section class="posts-section" aria-labelledby="rel">
+              <h2 id="rel">Bài viết về dự án này</h2>
+              <div class="posts">
+                {posts.map((post) => (
+                  <PostItem post={post} />
+                ))}
+              </div>
+            </section>
+          )
+        }
+      </div>
+    </div>
+
+    <a class="toc-fab" href="#toc">
+      <span class="toc-fab-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Mục lục</span>
+    </a>
   </div>
 </Base>
 
@@ -112,6 +216,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
+    container-type: inline-size;
   }
 
   .case-header .text-link {
@@ -133,10 +238,13 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     max-width: var(--measure);
   }
 
-  /* Thông tin: 2 cột trên mobile và tablet, 4 cột trên laptop (RD-005). */
+  /*
+   * Thông tin (RD-005): số cột theo độ rộng của chính header, không theo
+   * viewport. Một cột khi hẹp hơn 30rem, vì ở 2 cột mỗi ô chỉ còn khoảng 130 px
+   * và URL phải ngắt giữa chữ; 2 cột từ 30rem; mọi mục một hàng từ 56rem.
+   */
   .facts {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-lg);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--border);
@@ -169,6 +277,206 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     text-underline-offset: 3px;
   }
 
+  @container (min-width: 30rem) {
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 56rem) {
+    .facts {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ---------- Mục lục ---------- */
+
+  .case-body,
+  .case-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  /* Hai phần cách nhau một bậc thang lớn hơn các mục trong phần. */
+  .case-main {
+    gap: var(--space-3xl);
+    container-type: inline-size;
+  }
+
+  @media (min-width: 768px) {
+    .case-main {
+      gap: var(--space-4xl);
+    }
+  }
+
+  /*
+   * Lớp nổi (bảng mục lục, nút nổi) đè lên chữ nên phải đục. `--surface` của
+   * theme tối trong suốt 80% có chủ ý cho thẻ nằm trên nền trang; phủ nó lên
+   * `--bg` cho đúng màu đó nhưng không để chữ phía sau lộ qua.
+   */
+  .case {
+    --surface-solid: linear-gradient(var(--surface), var(--surface)) var(--bg);
+  }
+
+  /*
+   * Dưới 1024: mục lục ẩn cho tới khi nút nổi "Mục lục" làm #toc thành
+   * :target. Khi đó nó phủ cả màn hình: lớp nền mờ (bấm vào là đóng) và bảng
+   * danh sách neo ở góc dưới phải, chỗ của nút nổi.
+   */
+  .toc {
+    display: none;
+  }
+
+  .toc:target {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+  }
+
+  /* Trang phía sau không cuộn khi bảng đang mở. */
+  :global(html:has(#toc:target)) {
+    overflow: hidden;
+  }
+
+  /* Nền mờ theo màu nền của theme, nên đúng ở cả sáng lẫn tối. */
+  .toc-backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+  }
+
+  .toc-panel {
+    position: absolute;
+    right: var(--page-margin);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+    width: min(24rem, 100% - 2 * var(--page-margin));
+    max-height: calc(100% - 2 * var(--space-xl));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--space-md) var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-3);
+  }
+
+  .toc-head {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-solid);
+  }
+
+  .toc-label {
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  .toc .toc-close {
+    padding-inline: var(--space-sm);
+    margin-right: calc(-1 * var(--space-sm));
+    font-weight: 600;
+    color: var(--link);
+  }
+
+  /*
+   * Mục lục theo cây heading: tên phần (h2) đậm, sát lề; mục con (h3) thụt vào
+   * sau một vạch dọc. Mọi mục một dòng cao 44 (vùng chạm của RD-004), nên
+   * nhịp đều; quyết định dùng `label` ngắn và mang số như trên thẻ.
+   */
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc-parts {
+    padding-bottom: var(--space-md);
+  }
+
+  .toc a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--touch-target);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .toc-part {
+    font-weight: 600;
+    color: var(--fg-strong);
+  }
+
+  /* Viền trái nằm ở danh sách con; mục đang hover phủ lên nó một vạch màu link. */
+  .toc-items {
+    margin-bottom: var(--space-sm);
+    border-left: 1px solid var(--border);
+  }
+
+  .toc-items a {
+    margin-left: -1px;
+    padding-left: var(--space-md);
+    border-left: 1px solid transparent;
+    color: var(--fg-muted);
+  }
+
+  .toc a:hover {
+    color: var(--link);
+  }
+
+  .toc-items a:hover {
+    border-left-color: var(--link);
+  }
+
+  .toc-num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    color: var(--fg-subtle);
+  }
+
+  /* Tiêu đề nhảy tới từ mục lục không dính sát mép trên màn hình. */
+  .case :global(:is(h2, h3)[id]) {
+    scroll-margin-top: var(--space-xl);
+  }
+
+  /* ---------- Hai phần: Tóm tắt, Chi tiết ---------- */
+
+  /*
+   * h2 của phần lớn hơn h3 của mục và có vạch phía trên, để người đọc thấy mình
+   * vừa sang phần khác. Tên phần gắn với nội dung của nó (space-lg) hơn là với
+   * phần trước (khoảng cách giữa hai phần lớn hơn khoảng cách giữa các mục).
+   */
+  .part {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  .part-title {
+    margin-bottom: calc(var(--space-lg) - var(--section-gap));
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-strong);
+    font-size: var(--fs-h2);
+  }
+
+  .part > section > h3 {
+    font-size: var(--fs-h4);
+  }
+
+  /* ---------- Nội dung ---------- */
+
   .narrow {
     display: flex;
     flex-direction: column;
@@ -182,6 +490,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     gap: var(--space-xl);
   }
 
+  /* Quyết định: một cột tới 40rem, 2 × 2 khi cột nội dung đủ cho hai thẻ khoảng 300 px. */
   .decisions {
     display: grid;
     gap: var(--space-lg);
@@ -194,7 +503,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-    padding: var(--space-lg);
+    padding: var(--space-md);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     background: var(--surface);
@@ -206,8 +515,26 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     color: var(--link);
   }
 
-  .decisions h3 {
+  .decision-title {
+    font-family: var(--font-display);
     font-size: var(--fs-h5);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fg-strong);
+  }
+
+  /* Link xuống bằng chứng: gạch chân nhạt để thấy được là link cả khi không có hover. */
+  .evidence-link {
+    color: var(--fg-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .evidence-link:hover {
+    color: var(--link);
+    text-decoration-color: currentColor;
   }
 
   .decisions p {
@@ -219,7 +546,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
-    padding: var(--space-lg);
+    padding: var(--space-md);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     background: var(--bg-subtle);
@@ -229,19 +556,74 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     max-width: var(--measure);
   }
 
-  /* IA-007: mỗi mục `##` của thân bài (Bối cảnh, từng quyết định, Đối chiếu kết quả)
-     ngang cấp với Vấn đề / Quyết định / Kết quả, nên mang cỡ chữ và khoảng cách của một mục trang. */
+  /*
+   * Chữ của case study (Vấn đề, Kết quả, thân bài) dùng `--fs-body`, 1rem. Bốn
+   * phần của một quyết định là chữ in đậm đầu đoạn, không phải heading (IA-007):
+   * chúng cùng cỡ với chữ thường và chỉ khác độ đậm (`.prose strong`), nên dưới
+   * mỗi mục h3 chỉ còn một cấp chữ.
+   */
+  .prose {
+    font-size: var(--fs-body);
+  }
+
+  /* IA-007: mục `##` của thân bài (Bối cảnh, từng quyết định, Đối chiếu kết quả)
+     render thành h3, ngang cấp và cùng cỡ với Vấn đề / Quyết định / Kết quả. */
   .details {
     max-width: var(--measure);
   }
 
-  .details :global(h2) {
+  .details :global(h3) {
     margin-top: var(--section-gap);
-    font-size: var(--fs-h2);
+    font-size: var(--fs-h4);
   }
 
   .details > :global(:first-child) {
     margin-top: 0;
+  }
+
+  /*
+   * Nút nổi mở mục lục, dưới 1024 (từ 1024 mục lục đã luôn hiện bên phải).
+   * `fixed` để nút luôn ở góc màn hình, kể cả khi đã cuộn tới footer; nút
+   * thẳng hàng với lề phải của nội dung.
+   */
+  .toc-fab {
+    position: fixed;
+    right: var(--page-margin);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-2);
+    color: var(--fg-strong);
+  }
+
+  /* Cuối trang, nút nằm trên footer: chừa dưới footer đúng chỗ của nút
+     (khoảng dưới + 44 + khoảng trên), để hàng link cuối không bị nút che. */
+  :global(body:has(.toc-fab) .site-footer .inner) {
+    padding-bottom: calc(2 * var(--space-md) + var(--touch-target));
+  }
+
+  .toc-fab:hover {
+    border-color: var(--border-strong);
+    color: var(--link);
+  }
+
+  /* Icon hamburger dựng bằng CSS (dự án không có thư viện icon): vạch giữa là
+     chính phần tử, hai vạch trên dưới là bóng cách nó 2 px + space-xs. */
+  .toc-fab-icon {
+    width: 1.125rem;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    box-shadow:
+      0 calc(-2px - var(--space-xs)) 0 currentColor,
+      0 calc(2px + var(--space-xs)) 0 currentColor;
   }
 
   .posts-section {
@@ -255,7 +637,15 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     gap: var(--space-xl);
   }
 
-  @media (min-width: 768px) {
+  /* Dưới 30rem, padding 24 của thẻ và khung Kết quả làm cột chữ còn khoảng 240 px. */
+  @container (min-width: 30rem) {
+    .decisions li,
+    .outcome {
+      padding: var(--space-lg);
+    }
+  }
+
+  @container (min-width: 40rem) {
     .decisions {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -270,13 +660,77 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     }
   }
 
+  /*
+   * Laptop: mục lục thành cột phải cố định trong màn hình, lấp khoảng 480 px
+   * trống cạnh cột đọc 720. Bảng nổi, nền mờ, nút "Đóng" và nút nổi không còn
+   * việc gì; `.toc:target` cũng về dạng cột, phòng khi URL còn #toc.
+   */
   @media (min-width: 1024px) {
     .page.case {
       padding-top: var(--space-2xl);
     }
 
-    .facts {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .case-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 17rem;
+      column-gap: var(--space-3xl);
+      align-items: start;
+    }
+
+    .case-main {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .toc,
+    .toc:target {
+      display: block;
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      inset: auto;
+      top: var(--space-xl);
+      z-index: auto;
+      max-height: calc(100vh - 2 * var(--space-xl));
+      overflow-y: auto;
+    }
+
+    :global(html:has(#toc:target)) {
+      overflow: visible;
+    }
+
+    /* Không còn nút nổi: trả footer về padding của chính nó ở laptop (Footer.astro). */
+    :global(body:has(.toc-fab) .site-footer .inner) {
+      padding-bottom: var(--space-lg);
+    }
+
+    /* `.toc` đứng trước để thắng `.toc a { display: flex }`. */
+    .toc .toc-backdrop,
+    .toc .toc-close,
+    .toc-fab {
+      display: none;
+    }
+
+    .toc-panel {
+      position: static;
+      width: auto;
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+
+    .toc-head {
+      position: static;
+      margin-bottom: var(--space-sm);
+      border: 0;
+      background: none;
+    }
+
+    .toc-parts {
+      padding-bottom: 0;
     }
   }
 </style>

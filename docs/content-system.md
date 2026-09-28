@@ -213,6 +213,7 @@ Case study đầu tiên (`sojdev-site`, bản ngày 27/09/2026) cho thấy đi�
 | `problem` | Vấn đề và tiêu chí thành công | 150–350 | Vấn đề và 2–4 tiêu chí kiểm chứng được |
 | `decisions` | Các quyết định kiến trúc | 2–4 phần tử | Xem "Chọn quyết định nào" bên dưới |
 | `decisions[].title` | Tên quyết định | 15–70 | Nêu lựa chọn, không chỉ chủ đề: "Astro thay vì Next.js", không phải "Framework" |
+| `decisions[].label` | Nhãn trong mục lục | 8–28 | Rút gọn `title`, vẫn nêu lựa chọn: "Astro thay Next.js", "URL bất biến". 28 ký tự vừa một dòng ở cột mục lục 272 và ở 320 |
 | `decisions[].rationale` | Tóm tắt lập luận | 120–320 | Khoảng hai câu: chọn gì thay vì gì, vì sao; rồi cái giá chấp nhận |
 | `outcome` | Kết quả | 150–350 | Đối chiếu từng tiêu chí của `problem`; nói rõ phần chưa đo |
 
@@ -227,7 +228,7 @@ Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho l�
 **Thân bài, theo thứ tự:**
 
 1. `## Bối cảnh`: ràng buộc, rủi ro, và vì sao phải tự làm thay vì dùng giải pháp có sẵn.
-2. Mỗi quyết định một mục `## <title>`, **trùng tên và thứ tự** với `decisions[]`. Bên trong gồm bốn phần in đậm: **Phương án đã cân nhắc**, **Vì sao chọn**, **Bằng chứng**, **Cái giá** (kèm điều kiện đảo ngược nếu có).
+2. Mỗi quyết định một mục `## <title>`, **trùng tên và thứ tự** với `decisions[]`. Bên trong gồm bốn phần, mỗi phần mở đầu bằng chữ in đậm: **Phương án đã cân nhắc.**, **Vì sao chọn.**, **Bằng chứng.**, **Cái giá.** (kèm điều kiện đảo ngược nếu có). Chúng không phải heading: thân case study chỉ có heading `##`, và `###` trở xuống làm build thất bại (28/09/2026). Bản thử dùng `###` (render thành `<h4>`) cùng ngày cho thấy dưới mỗi mục có hai cấp chữ gần nhau, và bốn heading lặp y hệt ở mọi quyết định; chữ in đậm cùng cỡ với thân bài giữ mỗi mục một cấp.
 3. `## Đối chiếu kết quả`: bảng tiêu chí → kết quả → bằng chứng.
 4. `## Còn mở` (tuỳ chọn): những gì chưa đo hoặc chưa kiểm chứng, kèm kế hoạch.
 5. `## Điều tôi sẽ làm khác` (tuỳ chọn).
@@ -254,8 +255,8 @@ Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho l�
 ### Hệ quả
 
 - **Khó hơn:** vượt giới hạn độ dài thì phải viết lại, không chỉ cắt câu. Đây là ma sát có chủ ý.
-- **Layout:** thân bài không có tiêu đề bọc ngoài (trước ngày 28/09/2026 là `<h2>` "Chi tiết"). Mỗi mục `##` của thân bài là một `<h2>` ngang cấp với Vấn đề / Quyết định / Kết quả, cả trong cây heading lẫn về cỡ chữ và khoảng cách giữa các mục. Nhờ vậy cây heading không có mục con nào cùng cấp với mục cha.
-- **Để sau:** thẻ quyết định ở phần overview link xuống mục tương ứng trong thân bài.
+- **Cây heading (28/09/2026, thay bản "không tiêu đề bọc ngoài" cùng ngày).** Trang chia hai phần ở cấp `<h2>`: "Tóm tắt" chứa Vấn đề, Quyết định, Kết quả (`<h3>`, lấy từ frontmatter); "Chi tiết" chứa thân bài. Tác giả vẫn viết `##`; lúc render, heading của collection `projects` hạ một cấp (`src/lib/markdown-headings.ts`), nên mục `##` thành `<h3>` ngang cấp với Vấn đề / Quyết định / Kết quả. Trang không có `<h4>`. Bản trước để 11 mục `<h2>` ngang hàng: người đọc không thấy lúc nào rời phần tóm tắt (khoảng 1.240 px) để vào phần bằng chứng (khoảng 5.500 px, 80% trang ở 1280), và mỗi tên quyết định có hai heading ở hai cấp, bản tóm tắt thấp hơn bản chi tiết. Lý do bỏ `<h2>` "Chi tiết" lần đầu là mục con nằm cùng cấp với nó; hạ cấp lúc render giải quyết đúng lỗi đó. Thẻ quyết định ở phần tóm tắt không phải heading, nên mỗi tên quyết định chỉ có một heading.
+- **Điều hướng (28/09/2026):** tiêu đề thẻ quyết định link xuống mục cùng tên trong phần Chi tiết. Mục lục đi theo cây heading: hai phần và "Bài viết về dự án này" ở cấp ngoài, các mục `<h3>` bên trong. Bốn phần của quyết định là chữ in đậm nên không vào mục lục. Mục lục dựng từ `headings` của `render()`, nên thêm mục `##` là tự có trong mục lục. Nếu thân bài không bắt đầu ở `<h3>` (plugin hạ cấp không chạy, ví dụ dev server khởi động trước khi `astro.config.mjs` có plugin), `Project.astro` làm build thất bại thay vì dựng mục lục từ nhầm cấp heading. Quyết định hiện bằng `label` kèm số như trên thẻ, để mọi mục một dòng cao 44 và nhịp đều: với `title` đầy đủ (44–62 ký tự), mục quyết định xuống hai dòng và khoảng trắng giữa các dòng chữ tụt từ 24 xuống 8. Bố cục mục lục theo từng khoảng màn hình nằm ở RD-005.
 - **Đếm độ dài:** Zod đếm theo đơn vị UTF-16. Chữ tiếng Việt dựng sẵn (NFC) là một đơn vị; nếu file lưu ở dạng tổ hợp (NFD), dấu bị đếm riêng.
 - **Điều kiện đảo ngược:** thẻ quyết định ở giới hạn trên bị vỡ trên mobile, hoặc nhiều case study liên tục phải cắt ý để lọt giới hạn → chỉnh con số. Không thay đổi nào ở đây chạm URL.
 
@@ -283,6 +284,7 @@ Mọi thay đổi dưới đây đã áp dụng. Với `projects` (IA-007, áp d
 | `projects` | `decisions` từ tối thiểu 1 sang 2–4 phần tử | IA-007 |
 | `projects` | Giới hạn độ dài cho `summary`, `problem`, `outcome`, `decisions[].title`, `decisions[].rationale` | IA-007 |
 | `projects` | `updatedDate?`, vì `outcome` sẽ được cập nhật khi có số đo | IA-007 |
+| `projects` | `decisions[].label` bắt buộc, 8–28 ký tự, nhãn trong mục lục | IA-007 |
 
 Các bài hiện có đều có 2–3 tag nên đã thoả giới hạn 1–4. Khi tạo collection `tags`, phải khai báo đủ các tag đang dùng: `architecture`, `astro`, `i18n`, `nextjs`, `seo`.
 
@@ -308,6 +310,8 @@ Thuộc bước build trong quality gate của ADR-005.
 
 - Giới hạn số quyết định và độ dài các trường của `projects` (schema).
 - Các mục `##` của thân case study, trừ `Bối cảnh`, `Đối chiếu kết quả`, `Còn mở`, `Điều tôi sẽ làm khác`, phải trùng tên và thứ tự với `decisions[].title` (`assertDecisionSections()`, gọi trong `getProjects()` bằng `project.body`, throw kèm tên file). Mọi trang dự án, kể cả `/projects/<slug>/`, lấy dữ liệu qua `getProjects()`.
+- Thân case study không có heading `###` trở xuống; bốn phần của quyết định viết bằng chữ in đậm (`assertDecisionSections()`).
+- Heading thân bài phải đã hạ thành `<h3>` lúc render; nếu không (plugin `caseStudyHeadings` không chạy), `Project.astro` throw thay vì dựng mục lục sai.
 
 ## Stop rules
 

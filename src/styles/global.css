@@ -156,6 +156,15 @@ a:hover {
   border-radius: var(--radius-md);
 }
 
+/* Link trong trang (mục lục case study, skip link) cuộn mượt tới đích, để
+   người đọc thấy mình đi xuôi hay ngược trong trang thay vì bị nhảy cóc.
+   Chỉ bật khi hệ điều hành không yêu cầu giảm chuyển động. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

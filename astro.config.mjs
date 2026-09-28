@@ -4,6 +4,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import checkLinks from "./src/integrations/check-links.ts";
+import { caseStudyHeadings } from "./src/lib/markdown-headings.ts";
 import { responsiveTables } from "./src/lib/markdown-tables.ts";
 
 // Domain không nằm trong code: ở CI, SITE_URL lấy từ `actions/configure-pages`,
@@ -29,8 +30,9 @@ export default defineConfig({
   // Code trong bài có màu cho cả hai theme; nền khối code do .prose pre đặt
   // (bg-muted), dark đổi màu qua prefers-color-scheme trong global.css.
   // responsiveTables: bảng xếp thành khối trên màn hẹp mà vẫn giữ tên cột (RD-005).
+  // caseStudyHeadings: thân case study hạ một cấp heading, nằm dưới "Chi tiết" (IA-007).
   markdown: {
-    processor: satteri({ hastPlugins: [responsiveTables] }),
+    processor: satteri({ hastPlugins: [responsiveTables, caseStudyHeadings] }),
     shikiConfig: { themes: { light: "github-light", dark: "github-dark" } },
   },
   // Font của design system SoJDev: file variable lấy nguyên từ design system,

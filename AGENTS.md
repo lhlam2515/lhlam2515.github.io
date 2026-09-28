@@ -43,6 +43,7 @@ Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 - `src/layouts/Base.astro`: mọi trang đi qua layout này.
 - `src/integrations/check-links.ts`: kiểm link nội bộ trong `dist/` sau build.
 - `src/lib/markdown-tables.ts`: plugin Sätteri chạy trên mọi bảng Markdown, gắn nhãn cột để bảng xếp thành khối trên màn hẹp (RD-005).
+- `src/lib/markdown-headings.ts`: plugin Sätteri hạ một cấp mọi heading của case study lúc render (`##` thành h3), vì thân bài nằm dưới h2 "Chi tiết" (IA-007).
 - `src/styles/tokens.css` (sinh từ design system) và `src/styles/global.css` (biến bố cục, reset, `.prose`).
 
 ## Quy tắc khi sửa

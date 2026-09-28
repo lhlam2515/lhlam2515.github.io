@@ -65,6 +65,15 @@ function assertDecisionSections(projects: Project[]): void {
       .map((m) => m[1])
       .filter((h) => !FIXED_SECTIONS.has(h));
     const titles = project.data.decisions.map((d) => d.title);
+    // Bốn phần của quyết định là chữ in đậm, không phải heading: dưới mỗi mục
+    // chỉ có một cấp chữ, và mục lục không phải lọc bỏ các phần lặp lại.
+    const subheadings = [...(project.body ?? "").matchAll(/^#{3,6} +(.+?)\s*$/gm)].map((m) => m[1]);
+    if (subheadings.length > 0) {
+      errors.push(
+        `${project.filePath}: thân case study chỉ dùng heading \`##\`; viết các phần nhỏ bằng chữ in đậm đầu đoạn.\n` +
+          `  heading cấp sâu hơn: ${JSON.stringify(subheadings)}`,
+      );
+    }
     if (headings.join("\n") !== titles.join("\n")) {
       errors.push(
         `${project.filePath}: mục ## trong thân bài phải trùng tên và thứ tự với decisions[].title.\n` +

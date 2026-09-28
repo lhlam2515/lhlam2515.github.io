@@ -71,6 +71,8 @@ const projects = defineCollection({
       .array(
         z.object({
           title: text(15, 70),
+          // Nhãn trong mục lục của trang: một dòng ở cột mục lục 272 và ở 320 (IA-007).
+          label: text(8, 28),
           rationale: text(120, 320),
         }),
       )

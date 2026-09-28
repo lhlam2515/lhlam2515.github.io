@@ -96,6 +96,8 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | `h2` tiêu đề section | 24 | 30 | 32 | `clamp(1.5rem, 1.1rem + 1.6vw, 2rem)` |
 | `h4` tiêu đề dự án nổi bật | 20 | 23 | 24 | `clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem)` |
 | Tiêu đề bài trong danh sách | 20 | 22 | 22 | `1.25rem`, `1.375rem` từ 768 |
+| `h3` mục trong case study | 20 | 23 | 24 | `--fs-h4` |
+| Chữ case study (Vấn đề, Kết quả, thân bài) | 16 | 16 | 16 | `--fs-body`, line-height 1.75; bốn phần của quyết định là chữ in đậm cùng cỡ |
 | Chữ dẫn (`body-lg`) | 18 | 18 | 18 | `1.125rem` |
 | Thân bài viết | 17 | 17 | 17 | `1.0625rem`, line-height 1.75 |
 | Chữ UI (`body`) | 16 | 16 | 16 | `1rem` |
@@ -157,7 +159,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Bài viết | Cột 720 căn giữa | Toàn chiều ngang trừ lề | Như tablet; tag xuống dòng dưới ngày đăng |
 | Khối code | Cuộn ngang bên trong khối | Như laptop | Cuộn ngang, tràn sát mép màn hình, không bo góc |
 | Thẻ dự án liên quan | Ảnh 200 cạnh chữ | Như laptop | Ảnh trên, chữ dưới khi thẻ hẹp hơn 480 (RD-007) |
-| Case study | Thông tin 4 cột, quyết định 2 × 2 | Thông tin 2 cột, quyết định 2 × 2 | Thông tin 2 cột, quyết định 1 cột |
+| Case study | Nội dung cạnh mục lục 272 cố định trong màn hình; thông tin 4 cột; quyết định 1 cột ở 1024, 2 × 2 từ khoảng 1040 | Không có mục lục trong trang; nút nổi icon hamburger mở mục lục thành bảng nổi; thông tin 2 cột, quyết định 2 × 2 | Như tablet; thông tin 1 cột, quyết định 1 cột |
 | Bảng trong `.prose` | Bảng, cuộn ngang bên trong khi quá rộng | Như laptop | Cột chữ hẹp hơn 36rem: mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau có nhãn cột |
 | `/about/` | Ảnh và kênh liên hệ ở cột trái 400 | Tiêu đề trước, rồi ảnh 240 cạnh kênh liên hệ | Tiêu đề, ảnh, kênh liên hệ, rồi nội dung |
 | Footer | Một hàng, cao 160 | Xếp chồng | Xếp chồng, link xuống dòng khi hết chỗ |
@@ -170,6 +172,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 
 - **Khó hơn:** mỗi khối có tối đa ba bố cục phải giữ đồng bộ.
 - **Bảng xếp thành khối khi hẹp (28/09/2026).** Bảng 3 cột trong cột 288 chỉ còn khoảng 100 px mỗi cột: bảng "Đối chiếu kết quả" của case study `sojdev-site` ở 320 có dòng cao 460 px, mỗi dòng chữ một hai từ. Cuộn ngang không cứu được vì chữ vẫn ngắt theo cột. Khi cột chữ hẹp hơn 36rem, mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau mang nhãn cột. Nhãn lấy từ `<th>` lúc build (`src/lib/markdown-tables.ts` gắn `data-label`), nên không cần JavaScript; bảng cũng được gắn role ARIA tường minh để trình đọc màn hình vẫn đọc tên cột khi `display` đổi. Bảng rộng hơn 36rem giữ dạng bảng và cuộn ngang bên trong như khối code.
+- **Mục lục case study dưới 1024 là bảng nổi (28/09/2026).** Từ 1024 mục lục là cột phải cố định trong màn hình. Dưới 1024 không có chỗ cho cột đó, nên mục lục không nằm trong dòng đọc mà mở từ nút nổi tròn 44 × 44 có icon hamburger ở góc dưới phải (tên cho trình đọc màn hình là "Mục lục"; `position: fixed`, nên nút luôn ở góc màn hình kể cả khi cuộn tới footer; footer của trang case study có thêm padding dưới 76 px để hàng link cuối không nằm dưới nút). Không có JavaScript: nút trỏ tới `#toc`, `:target` hiện mục lục thành bảng neo ở góc dưới phải trên một lớp nền mờ, và khoá cuộn trang phía sau (`html:has(#toc:target)`). Chọn một mục thì URL đổi sang mục đó nên bảng tự đóng; "Đóng" và bấm vào nền mờ trỏ tới `#dong-muc-luc`, một fragment không có phần tử, nên bảng đóng mà trang không cuộn. Lớp nổi phủ `--surface` lên `--bg` vì `--surface` của theme tối trong suốt 80%. Cái giá: mỗi lần mở hay đóng thêm một mục vào lịch sử trình duyệt, nút Back có thể mở lại bảng; phím Esc không đóng bảng. Stop rule "không menu ẩn" của RD-004 nói về điều hướng chính của site (header), không phải mục lục trong trang; header vẫn đủ 3 mục ở mọi độ rộng.
 
 ## RD-006: Ảnh
 
@@ -197,6 +200,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 Component xuất hiện ở nhiều độ rộng cột đổi bố cục theo **độ rộng của chính nó**, bằng container query:
 
 - **Thẻ dự án liên quan:** ảnh cạnh chữ khi thẻ rộng từ 480; ảnh trên, chữ dưới khi hẹp hơn.
+- **Case study (28/09/2026):** từ 1024 cột nội dung hẹp lại vì có mục lục bên phải, nên số cột theo độ rộng cột chứ không theo viewport. Thông tin: 1 cột dưới 30rem, 2 cột từ 30rem, một hàng từ 56rem. Thẻ quyết định và bài viết: 1 cột dưới 40rem, 2 cột từ 40rem. Padding thẻ quyết định và khung Kết quả 16 dưới 30rem, để cột chữ ở 320 không còn khoảng 240 px.
 - **Bảng trong `.prose`:** xếp thành khối khi cột chữ hẹp hơn 36rem (RD-005).
 - Bố cục cấp trang (hero, lưới, header) vẫn dùng media query theo RD-001.
 
