@@ -52,26 +52,33 @@ const blog = defineCollection({
       }),
 });
 
-// Cấu trúc problem → decisions → outcome là chủ ý (ADR-003): frontmatter giữ
-// bản tóm tắt cho card/listing, thân Markdown giữ phần kể chi tiết.
+// IA-007: frontmatter là overview các quyết định; thân bài là bằng chứng.
+// Giới hạn dưới loại câu khẩu hiệu, giới hạn trên giữ mỗi trường khoảng hai câu
+// để thẻ quyết định trong lưới 2 × 2 (RD-005) vẫn đọc được. Zod đếm theo UTF-16,
+// nên file phải lưu ở dạng NFC.
+const text = (min: number, max: number) => z.string().min(min).max(max);
+
 const projects = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/projects/vi", generateId: slugId() }),
   schema: z.object({
     title: z.string(),
-    summary: z.string(),
+    summary: text(80, 200),
     slug: slugSchema,
     role: z.string(),
     stack: z.array(z.string()).min(1),
-    problem: z.string(),
+    problem: text(150, 350),
     decisions: z
       .array(
         z.object({
-          title: z.string(),
-          rationale: z.string(),
+          title: text(15, 70),
+          rationale: text(120, 320),
         }),
       )
-      .min(1),
-    outcome: z.string(),
+      .min(2)
+      .max(4),
+    outcome: text(150, 350),
+    // `outcome` được cập nhật khi có số đo mới.
+    updatedDate: z.coerce.date().optional(),
     repoUrl: z.url().optional(),
     liveUrl: z.url().optional(),
     featured: z.boolean().default(false),

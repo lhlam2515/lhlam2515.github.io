@@ -50,9 +50,38 @@ export async function getPublishedPosts(): Promise<Post[]> {
   return all.filter((post) => !post.data.draft).sort(byNewest);
 }
 
-/** IA-005: dự án featured trước, sau đó theo `order`. */
+/** Các mục `##` của thân case study không ứng với quyết định nào (IA-007). */
+const FIXED_SECTIONS = new Set(["Bối cảnh", "Đối chiếu kết quả", "Còn mở", "Điều tôi sẽ làm khác"]);
+
+/**
+ * IA-007: mỗi quyết định trong frontmatter có một mục `##` cùng tên, cùng thứ
+ * tự trong thân bài. Không kiểm thì hai bản lệch nhau mà build vẫn qua, như
+ * bản đầu của case study `sojdev-site`.
+ */
+function assertDecisionSections(projects: Project[]): void {
+  const errors: string[] = [];
+  for (const project of projects) {
+    const headings = [...(project.body ?? "").matchAll(/^## +(.+?)\s*$/gm)]
+      .map((m) => m[1])
+      .filter((h) => !FIXED_SECTIONS.has(h));
+    const titles = project.data.decisions.map((d) => d.title);
+    if (headings.join("\n") !== titles.join("\n")) {
+      errors.push(
+        `${project.filePath}: mục ## trong thân bài phải trùng tên và thứ tự với decisions[].title.\n` +
+          `  decisions: ${JSON.stringify(titles)}\n  thân bài:  ${JSON.stringify(headings)}`,
+      );
+    }
+  }
+  if (errors.length > 0) throw new Error(`Case study lệch cấu trúc:\n${errors.join("\n")}`);
+}
+
+/**
+ * IA-005: dự án featured trước, sau đó theo `order`. Đây là chỗ duy nhất lấy
+ * collection `projects`, để mọi trang dự án đều đi qua kiểm tra của IA-007.
+ */
 export async function getProjects(): Promise<Project[]> {
   const projects = await getCollection("projects");
+  assertDecisionSections(projects);
   return projects.sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order);
 }
 
