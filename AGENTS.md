@@ -1,89 +1,131 @@
 # SoJDev site
 
-Portfolio và blog kỹ thuật của Lê Hoàng Lâm: site tĩnh Astro 7, nội dung Markdown/MDX trong repo, deploy lên GitHub Pages. Không có runtime server, không có JavaScript phía client.
+Portfolio và blog kỹ thuật của Lê Hoàng Lâm: site tĩnh Astro 7, nội dung Markdown/MDX trong repo, deploy lên GitHub Pages. Không có server lúc chạy, không có JavaScript phía client. Mọi thay đổi đều phải giữ được hai điều này.
 
-Mọi quyết định đã chốt đều có mã và nằm trong `docs/`. Đọc file tương ứng trước khi đổi phần liên quan:
+File này dành cho cả developer lẫn AI agent làm việc trong repo. Nó trả lời ba câu: việc này cần đọc gì trước, sửa ở đâu, kiểm bằng cách nào. Lý do đầy đủ của từng quyết định nằm trong `docs/`; cách chạy local và mẫu frontmatter nằm trong `README.md`. `CLAUDE.md` là symlink tới file này.
+
+## Bắt đầu một việc
+
+Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" rồi mới sửa. Việc liên quan nhiều dòng thì đọc hết các dòng đó.
+
+| Việc | Đọc trước | Sửa ở | Kiểm bằng |
+| --- | --- | --- | --- |
+| Viết hoặc sửa bài blog | `src/content.config.ts` (schema `blog`), mục *Nội dung* bên dưới | `src/content/blog/vi/` | `pnpm build`; bài có ảnh, bảng hoặc khối code dài thì xem thêm trên trình duyệt |
+| Viết hoặc sửa case study | Schema `projects`, bài mẫu `src/content/projects/vi/sojdev-site.md` | `src/content/projects/vi/` | Như trên |
+| Thêm tag | IA-002 trong `docs/content-system.md` | `src/content/tags/tags.yaml` | `pnpm build` |
+| Thêm hoặc đổi trang, route, URL | IA-001, IA-004 → IA-006, mục *Metadata theo loại trang* | `src/pages/`, `src/layouts/` | `pnpm build` (bắt link hỏng), rồi trình duyệt |
+| Sửa component, CSS, bố cục | RD-001 → RD-007 trong `docs/responsive.md`, mục *CSS* bên dưới | `<style>` trong component, `src/styles/global.css` | Trình duyệt, theo mục *Kiểm tra trước khi báo xong* |
+| Đổi truy vấn nội dung, bài liên quan, lọc draft | IA-003, IA-005 | `src/lib/content.ts` | `pnpm build` |
+| Đổi schema frontmatter hoặc quy tắc slug | *Thay đổi schema so với ADR-003* và *Kiểm tra lúc build* trong `docs/content-system.md` | `src/content.config.ts`, `src/lib/slug.ts` | `pnpm build` sau khi xoá data store (xem *Bẫy*) |
+| Đổi `<head>`, canonical, OG, JSON-LD, RSS, sitemap | Mục *Metadata theo loại trang* | `src/layouts/Base.astro`, `src/pages/rss.xml.ts`, `astro.config.mjs` | `pnpm build` rồi `pnpm preview` (chỉ có sau build) |
+| Đổi tên site, tagline, liên hệ, menu | IA-004 | `src/lib/site.ts` | Trình duyệt ở 320 (header phải vừa một dòng) |
+| Đổi font hoặc token màu, khoảng cách | ADR-006 (font tự host), mục *Token trong design system* trong `docs/responsive.md` | Font: `astro.config.mjs`. Token: **không sửa ở repo**, xem *Hỏi trước* | Trình duyệt, sáng và tối |
+| Đổi build, CI, deploy | ADR-005 trong `docs/architecture.md` | `package.json`, `astro.config.mjs`, `.github/workflows/deploy.yml` | `pnpm build` |
+
+## Tìm code
+
+- **CodeGraph trước grep.** Repo đã index sẵn trong `.codegraph/`. Trên shell chạy `codegraph explore "<symbol hoặc câu hỏi>"`; agent có MCP thì gọi `codegraph_explore` (tool bị hoãn thì nạp qua tool search). Một lần gọi trả về mã nguồn kèm số dòng, nơi gọi và phạm vi ảnh hưởng.
+- **API Astro:** dự án chạy Astro 7, nên kiến thức về bản cũ hơn có thể sai. Tra tài liệu trước khi viết code dùng API Astro: agent dùng MCP `astro-docs` (`search_astro_docs`), developer mở <https://docs.astro.build>.
+- **Quyết định:** mỗi file trong `docs/` chia mục theo mã. Grep mã (`ADR-004`, `IA-003`, `RD-006`…) để nhảy thẳng tới mục cần đọc, không cần đọc cả file.
 
 | Mã | File | Phạm vi |
 | --- | --- | --- |
-| ADR-001 → ADR-006 | `docs/architecture.md` | SSG, Astro, nội dung trong repo, hosting/CI, tiếng Việt ở gốc |
+| ADR-001 → ADR-006 | `docs/architecture.md` | SSG, Astro, nội dung trong repo, dữ liệu API lấy lúc build, hosting/CI, tiếng Việt ở gốc |
 | IA-001 → IA-006 | `docs/content-system.md` | URL, tag, liên kết bài ↔ dự án, điều hướng, trang danh sách, trang chủ, metadata |
-| RD-001 → RD-007 | `docs/responsive.md` | Breakpoint, lưới, cỡ chữ, ảnh, container query |
+| RD-001 → RD-007 | `docs/responsive.md` | Breakpoint, lưới, cỡ chữ, điều hướng, sắp xếp khối, ảnh, container query |
 
-Mỗi file có mục **Stop rules**: những gì không được thêm vào. Muốn làm ngược một stop rule thì hỏi trước, đừng tự làm.
+Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 
-## Lệnh
+- `src/content.config.ts`: schema ba collection `blog`, `projects`, `tags` và `slugId()`.
+- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
+- `src/lib/slug.ts`: `slugify()`, `SLUG_PATTERN`, `slugSchema`.
+- `src/lib/format.ts`: `formatDate()`, `isoDate()` (định dạng theo UTC).
+- `src/layouts/Base.astro`: mọi trang đi qua layout này.
+- `src/integrations/check-links.ts`: kiểm link nội bộ trong `dist/` sau build.
+- `src/styles/tokens.css` (sinh từ design system) và `src/styles/global.css` (biến bố cục, reset, `.prose`).
 
-Dùng **pnpm** (CI chạy `pnpm@12.6.0`). `astro` không nằm trên PATH, luôn gọi qua `pnpm`.
+## Quy tắc khi sửa
+
+### Nội dung
+
+- **`slug` không đổi sau khi đăng.** GitHub Pages không có redirect, đổi slug là gãy mọi link cũ. Slug bắt buộc, chỉ gồm `a-z`, `0-9` và `-` đơn, không trùng trong collection; tạo từ tiêu đề bằng `slugify()`.
+- **Tag khai báo trước, gắn sau.** Thêm key vào `src/content/tags/tags.yaml` rồi mới dùng trong bài. Key là thuật ngữ tiếng Anh dạng slug, mỗi bài 1–4 tag.
+- **`relatedProjects` chỉ lưu ở bài.** Chiều ngược (dự án → bài) tính lúc build bằng `getPostsForProject()`, không thêm trường ngược vào `projects`.
+- **Case study là problem → decisions → outcome**, không phải danh sách tính năng. `projects` không có `updatedDate`.
+- **Frontmatter sai schema làm build thất bại, và đó là chủ ý.** Sửa frontmatter cho đúng; không nới schema để build qua.
+
+### Code
+
+- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang: đây là chỗ duy nhất lọc draft và chạy `assertReferences()` (IA-005).
+- **Dựng URL nội bộ bằng `postUrl()`, `projectUrl()`, `tagUrl()`.** URL luôn có `/` cuối (IA-001); link thiếu `/` bị `checkLinks()` bắt và làm build thất bại.
+- **Không `client:*`, không `<script>`, không framework UI.** Mọi thay đổi bố cục làm bằng CSS. ADR-004 có để ngỏ island của dịch vụ bên thứ ba (bình luận, analytics), nhưng thêm cái nào cũng phải hỏi trước.
+- **Ảnh dùng `ImageSlot` hoặc `<Picture>` của `astro:assets`** với tỉ lệ khung cố định, để không gây CLS (RD-006).
+- **Ngày hiển thị qua `formatDate()` / `isoDate()`**, không tự format.
+- **Font khai báo qua Fonts API trong `astro.config.mjs`**, file tự host để đủ glyph tiếng Việt. Không dùng Google Fonts.
+- **Comment, JSDoc, thông báo lỗi viết bằng tiếng Việt.** Comment giải thích *vì sao*, không kể lại code. Code hiện thực một quyết định thì trích mã, ví dụ `// IA-003: ...`.
+- **Không viết cứng domain.** `site` lấy từ `SITE_URL`; build cục bộ không có biến này thì tự thành `http://localhost:4321`.
+
+### CSS
+
+- **Mobile-first, chỉ hai mốc:** `@media (min-width: 768px)` và `(min-width: 1024px)` (RD-001). Component dùng ở nhiều độ rộng cột thì dùng container query (RD-007).
+- **Style đặt trong `<style>` của component.** Màu, khoảng cách, cỡ chữ lấy từ biến CSS, không chép số tay.
+- **Khoảng cách chỉ dùng thang** `--space-xs` … `--space-5xl` (4, 8, 16, 24, 32, 48, 64, 96, 128). Giá trị lọt giữa hai bậc thì chọn một bậc, không thêm bậc mới.
+- **Cỡ chữ chỉ dùng style của design system:** tiêu đề `--fs-h1`/`--fs-h2`/`--fs-h4` (co giãn), `--fs-h5`, `--fs-body-lg`, `--fs-body`, `--fs-caption`, `--fs-micro`, chữ mono `--fs-code`. Các biến cố định khai báo ở đầu `global.css`. Không dùng `px` cho cỡ chữ (RD-003).
+- **Được viết số trực tiếp** cho viền `1px`, độ rộng cột cố định trong `grid-template-columns`, và kích thước riêng của component đúng như design system ghi (chip 28, hàng 404 cao 64).
+
+## Kiểm tra trước khi báo xong
+
+### Build
+
+Chạy `pnpm build` sau mọi thay đổi trong `src/`. Đây là quality gate của CI: build lỗi thì không deploy. Lệnh chạy `astro check`, `astro build`, rồi `checkLinks()` kiểm link nội bộ, mất khoảng 10 giây.
+
+Dùng **pnpm** (CI chạy `pnpm@12.6.0`). `astro` không nằm trên PATH nên luôn gọi qua `pnpm`:
 
 ```zsh
 pnpm install
 pnpm astro dev --background   # dev server tại http://localhost:4321
 pnpm astro dev status         # cũng có: stop, logs
-pnpm build                    # astro check → astro build → kiểm tra link nội bộ (~10 giây)
-pnpm preview
+pnpm build
+pnpm preview                  # xem bản build
 ```
 
-`pnpm build` là quality gate của CI: build lỗi thì không deploy. Chạy nó trước khi báo xong mọi thay đổi trong `src/`.
+### Trình duyệt
 
-## Cấu trúc cần biết
+`pnpm build` chỉ bắt lỗi schema, type và link. Bố cục, màu và responsive phải kiểm trên trình duyệt thật. Repo dùng `playwright-cli` để đo (hướng dẫn trong skill `.claude/skills/playwright-cli/`). Agent tự chạy các bước này, không nhờ người mở trình duyệt hộ; developer dùng cùng lệnh hoặc DevTools.
 
-- `src/content.config.ts`: schema ba collection `blog`, `projects`, `tags`, và `slugId()` (chặn slug trùng).
-- `src/lib/content.ts`: mọi truy vấn nội dung và hàm dựng URL. `assertReferences()` kiểm tag và `relatedProjects`.
-- `src/lib/slug.ts`: `slugify()`, `SLUG_PATTERN`, `slugSchema`.
-- `src/lib/site.ts`: tên site, tagline, kênh liên hệ, 3 mục điều hướng.
-- `src/integrations/check-links.ts`: kiểm link nội bộ trong `dist/` sau build.
-- `src/layouts/Base.astro`: `<head>`, canonical, OG, JSON-LD, font. Mọi trang đi qua layout này.
-- `src/styles/tokens.css` (token design system) và `src/styles/global.css` (biến bố cục, reset, `.prose`).
+- **Khi nào:** sau mọi thay đổi CSS, layout hoặc component. Thay đổi chỉ ở Markdown thì bỏ qua, trừ khi bài có ảnh, bảng hoặc khối code dài.
+- **Chạy ở đâu:** trên dev server (`pnpm astro dev status`; chưa chạy thì `--background`). Thứ chỉ có sau build (canonical, sitemap, RSS, URL cuối) thì dùng `pnpm preview`.
+- **Chạy từ gốc repo** để `playwright-cli` đọc `.playwright/cli.config.json` (Chromium). Snapshot và ảnh rơi vào `.playwright-cli/` (đã gitignore); ảnh cần giữ thì lưu vào scratchpad bằng `--filename`.
+- **Kiểm gì:** checklist *Kiểm tra trước khi đăng* trong `docs/responsive.md`, chỉ những độ rộng và mục liên quan đến phần vừa đổi. Tối thiểu 320 và 1280, cả sáng lẫn tối.
+- **Đo trước, nhìn sau.** Đọc snapshot và `eval` ra số rồi so với quyết định; chụp ảnh khi cần xem màu, căn chỉnh, hoặc gửi người dùng.
+- Đóng trình duyệt khi xong.
 
-## Nội dung
+```zsh
+playwright-cli open http://localhost:4321/blog/
+playwright-cli resize 320 800
+playwright-cli --raw eval "document.documentElement.scrollWidth > innerWidth"   # true = cuộn ngang, vi phạm RD-002
+playwright-cli set-color-scheme dark
+playwright-cli screenshot --filename=<scratchpad>/blog-320-dark.png
+playwright-cli console warning                                                   # site không có JS: mọi lỗi console đều đáng xem
+playwright-cli close
+```
 
-- Bài blog ở `src/content/blog/vi/`, case study ở `src/content/projects/vi/`. Trường của từng loại xem trong `src/content.config.ts`.
-- `slug` bắt buộc, chỉ gồm `a-z`, `0-9` và `-` đơn, không trùng trong collection, **không đổi sau khi đăng** vì GitHub Pages không có redirect. Tạo từ tiêu đề bằng `slugify()`.
-- Tag phải khai báo trong `src/content/tags/tags.yaml` trước rồi mới gắn vào bài. Mỗi bài 1–4 tag. Key tag là thuật ngữ tiếng Anh dạng slug.
-- `relatedProjects` chỉ lưu ở bài; chiều ngược được tính lúc build (`getPostsForProject()`).
-- Case study theo cấu trúc problem → decisions → outcome, không phải danh sách tính năng. `projects` không có `updatedDate`.
-- Frontmatter sai schema làm build thất bại. Đây là chủ ý, đừng nới schema để build qua.
+## Hỏi trước khi làm
 
-## Quy ước code
+Những việc sau phải được chủ repo đồng ý trước, kể cả khi trông như cách sửa nhanh nhất. Agent thì hỏi người dùng trong phiên làm việc.
 
-- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang. Hàm này là chỗ duy nhất lọc draft và kiểm tham chiếu (IA-005).
-- **Dựng URL bằng `postUrl()`, `projectUrl()`, `tagUrl()`.** URL nội bộ luôn có `/` cuối (IA-001); link thiếu `/` làm build thất bại.
-- Comment, JSDoc và thông báo lỗi viết bằng **tiếng Việt**, và trích mã quyết định khi code hiện thực một quyết định (ví dụ `// IA-003: ...`). Comment giải thích *vì sao*, không kể lại code.
-- Không thêm `client:*`, `<script>` hay framework UI. Mọi thay đổi bố cục làm bằng CSS (ADR-004, RD).
-- CSS viết mobile-first, chỉ hai mốc `@media (min-width: 768px)` và `(min-width: 1024px)`. Component dùng ở nhiều độ rộng cột thì dùng container query (RD-007).
-- Style đặt trong `<style>` của component. Màu, khoảng cách, cỡ chữ lấy từ biến CSS (`var(--space-lg)`, `var(--fg-muted)`, `var(--fs-h2)`…), không chép số tay.
-  - Khoảng cách chỉ dùng thang `--space-xs` … `--space-5xl` (4, 8, 16, 24, 32, 48, 64, 96, 128). Giá trị lọt giữa hai bậc thì chọn một bậc, không thêm bậc mới.
-  - Cỡ chữ chỉ dùng style của design system: tiêu đề `--fs-h1`/`--fs-h2`/`--fs-h4` (co giãn), `--fs-h5`, `--fs-body-lg`, `--fs-body`, `--fs-caption`, `--fs-micro`, chữ mono `--fs-code`. Các biến cố định khai báo ở đầu `global.css`. Không dùng `px` cho cỡ chữ (RD-003).
-  - Được viết số trực tiếp: viền `1px`, độ rộng cột cố định trong `grid-template-columns`, và kích thước riêng của component (chip 28, hàng 404 cao 64) đúng như design system ghi.
-- **Không sửa tay `src/styles/tokens.css`.** File sinh từ design system SoJDev; đổi giá trị ở design system rồi sinh lại.
-- Font khai báo qua Fonts API trong `astro.config.mjs` (font tự host để đủ glyph tiếng Việt), không dùng Google Fonts.
-- Ảnh dùng `ImageSlot` / `<Picture>` của `astro:assets`, có tỉ lệ khung cố định để không gây CLS (RD-006).
-- Ngày hiển thị qua `formatDate()` / `isoDate()` trong `src/lib/format.ts` (định dạng theo UTC).
+- **Làm ngược một stop rule.** Mỗi file trong `docs/` có mục *Stop rules* liệt kê những gì không thêm vào (database, SSR, CMS, category, phân trang, hamburger, breakpoint thứ ba, JS đổi bố cục…).
+- **Sửa `src/styles/tokens.css`.** File sinh từ design system SoJDev; giá trị phải đổi ở design system rồi sinh lại.
+- **Đổi `slug` của nội dung đã đăng.**
+- **Thêm test suite trình duyệt:** Playwright test, `@playwright/test`, hay bước trình duyệt trong CI. `playwright-cli` là công cụ kiểm tra thủ công, không phải quality gate.
+- **Gỡ một trong các cơ chế chặn lỗi dưới đây.** Mỗi cơ chế bù cho một lỗi mà Astro không tự chặn:
+  - `slugId()` trong `src/content.config.ts`: Astro 7.3.5 không chặn slug trùng khi data store sạch, tức mọi lần build ở CI.
+  - `assertReferences()` trong `src/lib/content.ts`: `reference()` tới entry không tồn tại chỉ bị log lỗi, build vẫn chạy tiếp.
+  - `prerenderConflictBehavior: "error"` và `checkLinks()` trong `astro.config.mjs`: mặc định Astro chỉ cảnh báo khi hai route sinh cùng URL. `trailingSlash: "always"` chỉ ràng buộc dev server; với trang prerender, `checkLinks()` mới giữ quy ước `/` cuối.
+  - `slugify()` tự viết trong `src/lib/slug.ts`: đã so với package `slugify`, kết quả tiếng Việt giống hệt; bài `tieng-viet-o-goc-url` trích nguyên hàm này.
 
-## Đừng gỡ
+## Bẫy
 
-- `slugId()` trong `src/content.config.ts`: Astro 7.3.5 **không** chặn slug trùng khi data store sạch (mọi lần build ở CI).
-- `assertReferences()` trong `src/lib/content.ts`: `reference()` tới entry không tồn tại chỉ bị log lỗi, build vẫn chạy tiếp.
-- `prerenderConflictBehavior: "error"` và `checkLinks()` trong `astro.config.mjs`.
-- `slugify()` tự viết: đã so với package `slugify`, kết quả tiếng Việt giống hệt; bài `tieng-viet-o-goc-url` trích nguyên hàm này.
-
-## Bẫy đã biết
-
-- **Kiểm tra slug trùng hoặc tham chiếu hỏng:** xoá `node_modules/.astro/data-store.json` trước khi build, nếu không phép thử pass sai lý do.
-- **`typescript` pin ở `^6`:** `astro check` chưa hỗ trợ TS 7. Nếu thiếu `@astrojs/check` hoặc `typescript`, `astro check` in lỗi nhưng vẫn exit 0.
-- **`SITE_URL`:** CI lấy từ `actions/configure-pages` (Settings → Pages), thiếu thì build throw. Build cục bộ không cần, `site` tự thành `http://localhost:4321`. Không viết cứng domain trong code.
-- `trailingSlash: "always"` chỉ ràng buộc dev server; với trang prerender thì `checkLinks()` mới là thứ giữ quy ước.
-
-## Tra cứu
-
-- **Tài liệu Astro:** dùng MCP `astro-docs` (`search_astro_docs`) trước khi viết code dùng API Astro; dự án chạy Astro 7, kiến thức cũ có thể sai. Bản đầy đủ: <https://docs.astro.build>.
-
-## CodeGraph
-
-In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
-
-- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
-- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
-
-If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+- **Thử slug trùng hoặc tham chiếu hỏng mà build vẫn pass.** Data store cũ đang che lỗi. Xoá `node_modules/.astro/data-store.json` rồi build lại.
+- **`astro check` in lỗi nhưng exit 0.** Xảy ra khi thiếu `@astrojs/check` hoặc `typescript`, nên phải đọc output chứ đừng chỉ nhìn exit code. `typescript` pin ở `^6` vì `astro check` chưa hỗ trợ TS 7; đừng nâng lên 7.
+- **Build ở CI throw vì thiếu `SITE_URL`.** CI lấy giá trị này từ `actions/configure-pages` (Settings → Pages). Build cục bộ không cần.
