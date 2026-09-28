@@ -1,8 +1,10 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
+import { satteri } from "@astrojs/markdown-satteri";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import checkLinks from "./src/integrations/check-links.ts";
+import { responsiveTables } from "./src/lib/markdown-tables.ts";
 
 // Domain không nằm trong code: ở CI, SITE_URL lấy từ `actions/configure-pages`,
 // tức là theo mục Custom domain trong Settings → Pages. Đổi domain chỉ cần đổi
@@ -26,7 +28,9 @@ export default defineConfig({
   prerenderConflictBehavior: "error",
   // Code trong bài có màu cho cả hai theme; nền khối code do .prose pre đặt
   // (bg-muted), dark đổi màu qua prefers-color-scheme trong global.css.
+  // responsiveTables: bảng xếp thành khối trên màn hẹp mà vẫn giữ tên cột (RD-005).
   markdown: {
+    processor: satteri({ hastPlugins: [responsiveTables] }),
     shikiConfig: { themes: { light: "github-light", dark: "github-dark" } },
   },
   // Font của design system SoJDev: file variable lấy nguyên từ design system,

@@ -42,6 +42,7 @@ Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 - `src/lib/format.ts`: `formatDate()`, `isoDate()` (định dạng theo UTC).
 - `src/layouts/Base.astro`: mọi trang đi qua layout này.
 - `src/integrations/check-links.ts`: kiểm link nội bộ trong `dist/` sau build.
+- `src/lib/markdown-tables.ts`: plugin Sätteri chạy trên mọi bảng Markdown, gắn nhãn cột để bảng xếp thành khối trên màn hẹp (RD-005).
 - `src/styles/tokens.css` (sinh từ design system) và `src/styles/global.css` (biến bố cục, reset, `.prose`).
 
 ## Quy tắc khi sửa

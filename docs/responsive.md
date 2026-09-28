@@ -1,6 +1,6 @@
 # SoJDev Site — Nguyên tắc responsive
 
-Cập nhật: 27/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu nền: [architecture.md](./architecture.md), [content-system.md](./content-system.md) · Thiết kế: canvas "SoJDev site", trang Responsive
+Cập nhật: 28/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu nền: [architecture.md](./architecture.md), [content-system.md](./content-system.md) · Thiết kế: canvas "SoJDev site", trang Responsive
 
 ## Phạm vi
 
@@ -158,6 +158,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Khối code | Cuộn ngang bên trong khối | Như laptop | Cuộn ngang, tràn sát mép màn hình, không bo góc |
 | Thẻ dự án liên quan | Ảnh 200 cạnh chữ | Như laptop | Ảnh trên, chữ dưới khi thẻ hẹp hơn 480 (RD-007) |
 | Case study | Thông tin 4 cột, quyết định 2 × 2 | Thông tin 2 cột, quyết định 2 × 2 | Thông tin 2 cột, quyết định 1 cột |
+| Bảng trong `.prose` | Bảng, cuộn ngang bên trong khi quá rộng | Như laptop | Cột chữ hẹp hơn 36rem: mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau có nhãn cột |
 | `/about/` | Ảnh và kênh liên hệ ở cột trái 400 | Tiêu đề trước, rồi ảnh 240 cạnh kênh liên hệ | Tiêu đề, ảnh, kênh liên hệ, rồi nội dung |
 | Footer | Một hàng, cao 160 | Xếp chồng | Xếp chồng, link xuống dòng khi hết chỗ |
 
@@ -168,7 +169,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 ### Hệ quả
 
 - **Khó hơn:** mỗi khối có tối đa ba bố cục phải giữ đồng bộ.
-- **Để sau:** bảng dữ liệu trong bài viết (chưa có bài nào dùng). Khi có, áp dụng cùng quy tắc với khối code: cuộn ngang bên trong, có tiêu đề cột.
+- **Bảng xếp thành khối khi hẹp (28/09/2026).** Bảng 3 cột trong cột 288 chỉ còn khoảng 100 px mỗi cột: bảng "Đối chiếu kết quả" của case study `sojdev-site` ở 320 có dòng cao 460 px, mỗi dòng chữ một hai từ. Cuộn ngang không cứu được vì chữ vẫn ngắt theo cột. Khi cột chữ hẹp hơn 36rem, mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau mang nhãn cột. Nhãn lấy từ `<th>` lúc build (`src/lib/markdown-tables.ts` gắn `data-label`), nên không cần JavaScript; bảng cũng được gắn role ARIA tường minh để trình đọc màn hình vẫn đọc tên cột khi `display` đổi. Bảng rộng hơn 36rem giữ dạng bảng và cuộn ngang bên trong như khối code.
 
 ## RD-006: Ảnh
 
@@ -196,6 +197,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 Component xuất hiện ở nhiều độ rộng cột đổi bố cục theo **độ rộng của chính nó**, bằng container query:
 
 - **Thẻ dự án liên quan:** ảnh cạnh chữ khi thẻ rộng từ 480; ảnh trên, chữ dưới khi hẹp hơn.
+- **Bảng trong `.prose`:** xếp thành khối khi cột chữ hẹp hơn 36rem (RD-005).
 - Bố cục cấp trang (hero, lưới, header) vẫn dùng media query theo RD-001.
 
 ### Các phương án
