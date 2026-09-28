@@ -33,16 +33,18 @@ const path = Astro.url.pathname;
     background: var(--bg);
   }
 
+  /* Link nav cao bằng header để vạch của mục đang mở nằm ngay trên viền dưới. */
   .inner {
     height: var(--header-h);
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     gap: var(--space-md);
   }
 
   /* Chưa có logo: wordmark Space Grotesk 700, tracking -0.02em (design system, Logo). */
   .wordmark {
+    align-self: center;
     display: inline-flex;
     align-items: center;
     min-height: var(--touch-target);
@@ -56,7 +58,6 @@ const path = Astro.url.pathname;
 
   ul {
     display: flex;
-    align-items: center;
     gap: var(--space-xs);
     margin: 0 calc(-1 * var(--space-sm)) 0 0;
     padding: 0;
@@ -66,9 +67,10 @@ const path = Astro.url.pathname;
   nav a {
     display: inline-flex;
     align-items: center;
-    height: var(--touch-target);
+    height: var(--header-h);
     padding: 0 var(--space-sm);
-    font-size: var(--fs-caption);
+    /* RD-003: chữ UI không dưới 16; ở 320 menu 16 vẫn vừa một dòng. */
+    font-size: var(--fs-body);
     font-weight: 500;
     color: var(--fg-muted);
     text-decoration: none;
