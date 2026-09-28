@@ -123,6 +123,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 ### Quyết định
 
 - **Không hamburger, không menu ẩn.** Logo và 3 mục (Dự án, Blog, Giới thiệu) vừa một dòng tới 320. Header cao 56 trên mobile, 72 từ 768.
+- **Logo dưới 768 chỉ còn mark (28/09/2026).** Lockup đủ của design system (mark 20, wordmark 18) cộng 3 mục cỡ 16 đè lên nhau dưới khoảng 380, nên dưới 768 header chỉ hiện mark `<SJ/>` cao 20; từ 768 hiện mark 24 cạnh wordmark 22. Link logo vẫn mang tên "SoJDev, về trang chủ" qua `aria-label`. Chọn bỏ wordmark thay vì thêm mốc ở 380, vì RD-001 chỉ có hai mốc.
 - **Vùng chạm tối thiểu 44 × 44** cho mọi điều khiển độc lập: link điều hướng, nút, nút lọc chủ đề, link "Xem dự án →". Ngoại lệ có chủ ý: chip tag nằm trong dòng meta của bài cao 28, vẫn đạt mức tối thiểu 24 của WCAG 2.5.8.
 - **Không thông tin nào chỉ xuất hiện khi rê chuột.** Hover chỉ đổi màu.
 - **Chiều cao theo nội dung.** Không section nào đặt chiều cao theo viewport (`100vh`, `100dvh`). Khi điện thoại xoay ngang (844 × 390), hero vẫn hiện đủ tiêu đề và nút.
@@ -146,7 +147,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 
 | Khối | Laptop | Tablet | Mobile |
 | --- | --- | --- | --- |
-| Header | Logo trái, 3 mục phải, cao 72 | Như laptop | Cao 56, vẫn đủ 3 mục |
+| Header | Mark và wordmark trái, 3 mục phải, cao 72 | Như laptop | Cao 56, chỉ còn mark, vẫn đủ 3 mục |
 | Hero trang chủ | Chữ 8 cột, ảnh chân dung 4 cột, tỉ lệ 4:5 | Chữ 5 cột, ảnh 3 cột | Chữ và nút trước, ảnh sau, cắt 4:3 |
 | Dự án nổi bật | Ảnh 7 cột cạnh chữ 5 cột | Ảnh trên, chữ dưới | Như tablet; bảng Vấn đề, Quyết định xếp nhãn trên nội dung |
 | Dự án phụ, danh sách chủ đề | 2 cột | 2 cột | 1 cột |

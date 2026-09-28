@@ -7,7 +7,16 @@ const path = Astro.url.pathname;
 
 <header class="site-header">
   <div class="container inner">
-    <a class="wordmark" href="/" aria-label={`${SITE.name}, về trang chủ`}>{SITE.name}</a>
+    <a class="logo" href="/" aria-label={`${SITE.name}, về trang chủ`}>
+      {/* File mark lấy nguyên từ design system (assets/Logos), không vẽ lại. Bản tối
+          chọn bằng prefers-color-scheme như màu của trang: gradient-primary rơi
+          xuống 2.4:1 trên nền trắng nên không dùng chung một file cho hai theme. */}
+      <picture>
+        <source srcset="/brand/sojdev-mark-dark.svg" media="(prefers-color-scheme: dark)" />
+        <img class="mark" src="/brand/sojdev-mark-light.svg" alt="" width="100" height="44" />
+      </picture>
+      <span class="wordmark">{SITE.name}</span>
+    </a>
     <nav aria-label="Điều hướng chính">
       <ul>
         {
@@ -42,18 +51,35 @@ const path = Astro.url.pathname;
     gap: var(--space-md);
   }
 
-  /* Chưa có logo: wordmark Space Grotesk 700, tracking -0.02em (design system, Logo). */
-  .wordmark {
+  /* Lockup theo design system (Logo): header 72 thì mark 24, wordmark 22, cách 12.
+     Các số này là kích thước riêng của lockup, không thuộc thang khoảng cách.
+     Dưới 768 chỉ còn mark 20: đủ lockup (mark, wordmark 18) thì dưới ~380 đè lên
+     menu, mà menu phải đủ ba mục ở 320 (RD-004). Link vẫn mang tên qua aria-label. */
+  .logo {
     align-self: center;
     display: inline-flex;
     align-items: center;
     min-height: var(--touch-target);
-    font-family: var(--font-display);
-    font-size: var(--fs-h5);
-    font-weight: 700;
-    letter-spacing: -0.02em;
     color: var(--fg-strong);
     text-decoration: none;
+  }
+
+  picture {
+    display: contents;
+  }
+
+  .mark {
+    display: block;
+    width: auto;
+    height: 20px;
+  }
+
+  .wordmark {
+    display: none;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   ul {
@@ -92,6 +118,18 @@ const path = Astro.url.pathname;
   }
 
   @media (min-width: 768px) {
+    .logo {
+      gap: 12px;
+    }
+
+    .mark {
+      height: 24px;
+    }
+
+    .wordmark {
+      display: inline;
+    }
+
     ul {
       margin-right: calc(-1 * var(--space-md));
     }
