@@ -2,16 +2,33 @@
 /**
  * Link trình bày như Button của design system (primary / secondary). Cao 44
  * thay vì 40 của component để đạt vùng chạm tối thiểu (RD-004).
+ *
+ * Không có `href` (đích chưa sẵn sàng, ví dụ CV chưa có file): render
+ * <button disabled>, vì <a> không href không phải link và không báo được trạng
+ * thái vô hiệu cho trình đọc màn hình. `describedby` trỏ tới dòng giải thích.
  */
 interface Props {
-  href: string;
+  href?: string;
   variant?: "primary" | "secondary";
+  /** Tải file thay vì mở; chuỗi là tên file gợi ý khi lưu. */
+  download?: boolean | string;
+  describedby?: string;
 }
 
-const { href, variant = "primary" } = Astro.props;
+const { href, variant = "primary", download, describedby } = Astro.props;
 ---
 
-<a class:list={["btn", variant]} href={href}><slot /></a>
+{
+  href ? (
+    <a class:list={["btn", variant]} href={href} download={download} aria-describedby={describedby}>
+      <slot />
+    </a>
+  ) : (
+    <button type="button" class:list={["btn", variant]} disabled aria-describedby={describedby}>
+      <slot />
+    </button>
+  )
+}
 
 <style>
   .btn {
@@ -28,6 +45,12 @@ const { href, variant = "primary" } = Astro.props;
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
+  }
+
+  /* <button> không kế thừa chữ của trang như <a>. */
+  button.btn {
+    font-family: inherit;
+    cursor: pointer;
   }
 
   .primary {
@@ -53,5 +76,15 @@ const { href, variant = "primary" } = Astro.props;
   .secondary:hover {
     background: var(--primary-tint);
     color: var(--link);
+  }
+
+  /* Vô hiệu: nền và chữ nhạt, bỏ hover. Design system chưa có token
+     disabled nên dùng nền và chữ phụ có sẵn. */
+  .btn:disabled,
+  .btn:disabled:hover {
+    border-color: var(--border);
+    background: var(--bg-muted);
+    color: var(--fg-subtle);
+    cursor: not-allowed;
   }
 </style>
