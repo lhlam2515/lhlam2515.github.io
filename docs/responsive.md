@@ -78,7 +78,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Cột đọc bài viết | Toàn chiều ngang trừ lề | Toàn chiều ngang trừ lề | 720, căn giữa |
 | Khoảng cách giữa section | 48 (`space-2xl`) | 64 (`space-3xl`) | 96 trang chủ (`space-4xl`), 64 trang trong |
 
-- **Tablet dùng 8 cột** để các tỉ lệ của laptop còn chia đều: hero 7/5 thành 5/3, lưới 2 cột giữ nguyên 2 cột.
+- **Tablet dùng 8 cột** để các tỉ lệ của laptop còn chia đều: hero 8/4 thành 5/3, lưới 2 cột giữ nguyên 2 cột.
 - Container: `width: min(1200px, 100% - 2 × lề)`, căn giữa.
 
 ### Hệ quả
@@ -147,7 +147,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Khối | Laptop | Tablet | Mobile |
 | --- | --- | --- | --- |
 | Header | Logo trái, 3 mục phải, cao 72 | Như laptop | Cao 56, vẫn đủ 3 mục |
-| Hero trang chủ | Chữ 7 cột, ảnh chân dung 5 cột, tỉ lệ 4:5 | Chữ 5 cột, ảnh 3 cột | Chữ và nút trước, ảnh sau, cắt 4:3 |
+| Hero trang chủ | Chữ 8 cột, ảnh chân dung 4 cột, tỉ lệ 4:5 | Chữ 5 cột, ảnh 3 cột | Chữ và nút trước, ảnh sau, cắt 4:3 |
 | Dự án nổi bật | Ảnh 7 cột cạnh chữ 5 cột | Ảnh trên, chữ dưới | Như tablet; bảng Vấn đề, Quyết định, Kết quả xếp nhãn trên nội dung |
 | Dự án phụ, danh sách chủ đề | 2 cột | 2 cột | 1 cột |
 | Trang `/projects/` | So le: ảnh trái rồi ảnh phải | Xếp chồng, ảnh luôn ở trên | Như tablet |
@@ -171,6 +171,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 
 - **Khó hơn:** mỗi khối có tối đa ba bố cục phải giữ đồng bộ.
 - **Bảng xếp thành khối khi hẹp (28/09/2026).** Bảng 3 cột trong cột 288 chỉ còn khoảng 100 px mỗi cột: bảng "Đối chiếu kết quả" của case study `sojdev-site` ở 320 có dòng cao 460 px, mỗi dòng chữ một hai từ. Cuộn ngang không cứu được vì chữ vẫn ngắt theo cột. Khi cột chữ hẹp hơn 36rem, mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau mang nhãn cột. Nhãn lấy từ `<th>` lúc build (`src/lib/markdown-tables.ts` gắn `data-label`), nên không cần JavaScript; bảng cũng được gắn role ARIA tường minh để trình đọc màn hình vẫn đọc tên cột khi `display` đổi. Bảng rộng hơn 36rem giữ dạng bảng và cuộn ngang bên trong như khối code.
+- **Hero trang chủ 8/4 thay 7/5 (28/09/2026).** Chiều cao hero do ảnh chân dung 4:5 quyết định. Ở 7/5 ảnh rộng 473 nên hero cao 592, khối chữ chỉ khoảng 270 và hở khoảng 160 mỗi phía; ở 1280 × 800 hero kết thúc ở y 761, tiêu đề "Dự án tiêu biểu" ở y 857, nên người đến từ CV không thấy dự án nào khi chưa cuộn. Ở 8/4 ảnh còn khoảng 379 × 473 và tiêu đề đó nằm trong màn hình đầu.
 - **Mục lục case study dưới 1024 là bảng nổi (28/09/2026).** Từ 1024 mục lục là cột phải cố định trong màn hình. Dưới 1024 không có chỗ cho cột đó, nên mục lục không nằm trong dòng đọc mà mở từ nút nổi tròn 44 × 44 có icon hamburger ở góc dưới phải (tên cho trình đọc màn hình là "Mục lục"; `position: fixed`, nên nút luôn ở góc màn hình kể cả khi cuộn tới footer; footer của trang case study có thêm padding dưới 76 px để hàng link cuối không nằm dưới nút). Không có JavaScript: nút trỏ tới `#toc`, `:target` hiện mục lục thành bảng neo ở góc dưới phải trên một lớp nền mờ, và khoá cuộn trang phía sau (`html:has(#toc:target)`). Chọn một mục thì URL đổi sang mục đó nên bảng tự đóng; "Đóng" và bấm vào nền mờ trỏ tới `#dong-muc-luc`, một fragment không có phần tử, nên bảng đóng mà trang không cuộn. Lớp nổi phủ `--surface` lên `--bg` vì `--surface` của theme tối trong suốt 80%. Cái giá: mỗi lần mở hay đóng thêm một mục vào lịch sử trình duyệt, nút Back có thể mở lại bảng; phím Esc không đóng bảng. Stop rule "không menu ẩn" của RD-004 nói về điều hướng chính của site (header), không phải mục lục trong trang; header vẫn đủ 3 mục ở mọi độ rộng.
 
 ## RD-006: Ảnh
