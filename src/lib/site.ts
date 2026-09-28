@@ -3,6 +3,11 @@ export const SITE = {
   name: "SoJDev",
   author: "Lê Hoàng Lâm",
   jobTitle: "Software Engineer",
+  // Sidebar trang Giới thiệu và JSON-LD `Person`.
+  location: "TP. Hồ Chí Minh",
+  school: "Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM",
+  // Nút "Tải CV" trang Giới thiệu chỉ bật khi file này có trong public/.
+  cv: "/cv.pdf",
   locale: "vi-VN",
   // Câu định vị nằm ở `description` của src/content/pages/vi/home.md (IA-008).
 } as const;

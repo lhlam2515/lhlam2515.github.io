@@ -15,14 +15,14 @@ principles:
   - title: "Bằng chứng trước khẳng định"
     text: "Kiểm chứng bằng thử nghiệm nhỏ và số đo trước khi kết luận; điều gì chưa kiểm chứng thì ghi rõ."
 
-# Mục "Học vấn". Xoá hết các dòng thì trang ẩn cả mục.
+# Mục "Học vấn", mới nhất trước. Xoá hết các dòng thì trang ẩn cả mục.
 education:
-  - period: "09/2023 – 09/2027 (dự kiến)"
-    title: "Công nghệ thông tin, chuyên ngành Kỹ thuật phần mềm"
-    text: "Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM."
   - period: "09/2026 – nay"
     title: "Khóa luận tốt nghiệp: Towards Trustworthy AI-based API Testing"
     text: "Xây dựng framework đánh giá độ tin cậy của test API do LLM sinh ra."
+  - period: "09/2023 – 09/2027 (dự kiến)"
+    title: "Công nghệ thông tin, chuyên ngành Kỹ thuật phần mềm"
+    text: "Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM."
 ---
 
 Câu hỏi tôi quan tâm nhất là: làm sao biết phần mềm mình làm ra là đúng? Với tôi, câu trả lời trải dài suốt SDLC: bắt đầu từ những yêu cầu viết đủ rõ để kiểm thử được, đi qua các quyết định kiến trúc ghi lại thành ADR, và khép lại ở các bước kiểm tra tự động, chặn lỗi trước khi lên production.

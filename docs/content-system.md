@@ -65,7 +65,7 @@ flowchart TD
 | Bài viết | `/blog/<slug>/` | một entry `blog` |
 | Mọi tag | `/tags/` | từ vựng tag + số bài |
 | Một tag | `/tags/<tag>/` | `blog` lọc theo tag |
-| Giới thiệu | `/about/` | `about`, JSON-LD `Person` |
+| Giới thiệu | `/about/` | `about` + `projects` (featured), JSON-LD `Person` |
 | RSS | `/rss.xml` | `blog`, bỏ draft |
 | Không tìm thấy | `/404.html` | trang tĩnh |
 

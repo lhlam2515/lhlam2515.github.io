@@ -161,10 +161,10 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Thẻ dự án liên quan | Ảnh 200 cạnh chữ | Như laptop | Ảnh trên, chữ dưới khi thẻ hẹp hơn 480 (RD-007) |
 | Case study | Nội dung cạnh mục lục 272 cố định trong màn hình; thông tin 4 cột; quyết định 1 cột ở 1024, 2 × 2 từ khoảng 1040 | Không có mục lục trong trang; nút nổi icon hamburger mở mục lục thành bảng nổi; thông tin 2 cột, quyết định 2 × 2 | Như tablet; thông tin 1 cột, quyết định 1 cột |
 | Bảng trong `.prose` | Bảng, cuộn ngang bên trong khi quá rộng | Như laptop | Cột chữ hẹp hơn 36rem: mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau có nhãn cột |
-| `/about/` | Ảnh và kênh liên hệ ở cột trái 400 | Tiêu đề trước, rồi ảnh 240 cạnh kênh liên hệ | Tiêu đề, ảnh, kênh liên hệ, rồi nội dung |
+| `/about/` | Bố cục hồ sơ GitHub: cột hồ sơ 296 (ảnh tròn, tên, nút Email, thông tin kèm icon) cạnh tiêu đề và nội dung | Như laptop, cột hồ sơ 240 | Tiêu đề và chữ dẫn, rồi ảnh tròn 96 cạnh tên, nút Email và thông tin, rồi nội dung |
 | Footer | Một hàng, cao 160 | Xếp chồng | Xếp chồng, link xuống dòng khi hết chỗ |
 
-**Thứ tự HTML cần chú ý:** trên `/about/`, tiêu đề và phần giới thiệu đứng trước `<aside>` liên hệ trong HTML. Trên laptop, grid đặt `<aside>` vào cột trái bằng `grid-column`, không bằng `order`.
+**Thứ tự HTML cần chú ý:** trên `/about/`, tiêu đề "Giới thiệu" và chữ dẫn đứng trước khối hồ sơ trong HTML, rồi tới nội dung. Từ 768, grid đặt hồ sơ vào cột trái bằng `grid-column`, không bằng `order`. Nội dung theo thứ tự: khung "Tôi làm gì" kiểu README, dự án tiêu biểu, cách làm việc (thẻ), học vấn mới nhất trước (29/09/2026).
 
 **Trang không bao giờ cuộn ngang.** Khối `<pre>` được cuộn ngang bên trong: WCAG 1.4.10 miễn trừ nội dung cần bố cục hai chiều, và tài liệu giải thích của W3C nêu khối code là ví dụ. Trên mobile, thụt lề trong code mẫu dùng 2 dấu cách để giảm cuộn ngang.
 
