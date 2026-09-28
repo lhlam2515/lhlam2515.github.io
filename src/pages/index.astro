@@ -1,6 +1,7 @@
 ---
 import ButtonLink from "../components/ButtonLink.astro";
 import ContactBlock from "../components/ContactBlock.astro";
+import portrait from "../assets/portrait.jpg";
 import ImageSlot from "../components/ImageSlot.astro";
 import PostItem from "../components/PostItem.astro";
 import ProjectCard from "../components/ProjectCard.astro";
@@ -39,7 +40,18 @@ const jsonLd = {
           <a class="text-link" href="/about/">Giới thiệu về tôi →</a>
         </div>
       </div>
-      <ImageSlot class="portrait" label="Ảnh chân dung" size="880 × 1100" ratio="4 / 5" mobileRatio="4 / 3" />
+      <ImageSlot
+        class="portrait"
+        label="Ảnh chân dung"
+        size="880 × 1100"
+        ratio="4 / 5"
+        mobileRatio="4 / 3"
+        src={portrait}
+        alt={`Ảnh chân dung ${SITE.author}`}
+        position="50% 20%"
+        loading="eager"
+        sizes="(min-width: 1024px) 480px, (min-width: 768px) 40vw, 100vw"
+      />
     </section>
 
     {

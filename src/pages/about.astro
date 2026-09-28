@@ -1,5 +1,6 @@
 ---
 import ButtonLink from "../components/ButtonLink.astro";
+import portrait from "../assets/portrait.jpg";
 import ImageSlot from "../components/ImageSlot.astro";
 import Base from "../layouts/Base.astro";
 import { CONTACT, SITE } from "../lib/site";
@@ -52,7 +53,17 @@ const jsonLd = {
     </div>
 
     <aside aria-label="Liên hệ">
-      <ImageSlot label="Ảnh chân dung" size="880 × 1100" ratio="4 / 5" mobileRatio="4 / 3" />
+      <ImageSlot
+        label="Ảnh chân dung"
+        size="880 × 1100"
+        ratio="4 / 5"
+        mobileRatio="4 / 3"
+        src={portrait}
+        alt={`Ảnh chân dung ${SITE.author}`}
+        position="50% 20%"
+        loading="eager"
+        sizes="(min-width: 1024px) 400px, (min-width: 768px) 240px, 100vw"
+      />
       <div class="channels">
         <ButtonLink href={`mailto:${CONTACT.email}`}>Email</ButtonLink>
         <ul>
