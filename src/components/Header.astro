@@ -47,7 +47,7 @@ const path = Astro.url.pathname;
     align-items: center;
     min-height: var(--touch-target);
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: var(--fs-h5);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--fg-strong);
@@ -68,7 +68,7 @@ const path = Astro.url.pathname;
     align-items: center;
     height: var(--touch-target);
     padding: 0 var(--space-sm);
-    font-size: 14px;
+    font-size: var(--fs-caption);
     font-weight: 500;
     color: var(--fg-muted);
     text-decoration: none;
@@ -90,16 +90,12 @@ const path = Astro.url.pathname;
   }
 
   @media (min-width: 768px) {
-    .wordmark {
-      font-size: 22px;
-    }
-
     ul {
-      margin-right: -14px;
+      margin-right: calc(-1 * var(--space-md));
     }
 
     nav a {
-      padding: 0 14px;
+      padding: 0 var(--space-md);
     }
   }
 </style>

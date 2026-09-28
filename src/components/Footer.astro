@@ -41,19 +41,19 @@ const year = new Date().getFullYear();
   .about {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-sm);
   }
 
   .wordmark {
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: var(--fs-h5);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--fg-strong);
   }
 
   .line {
-    font-size: 14px;
+    font-size: var(--fs-caption);
     line-height: 1.5;
     color: var(--fg-muted);
   }
@@ -62,7 +62,7 @@ const year = new Date().getFullYear();
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-xs);
-    margin: 0 0 0 -12px;
+    margin: 0 0 0 calc(-1 * var(--space-md));
     padding: 0;
     list-style: none;
   }
@@ -71,8 +71,8 @@ const year = new Date().getFullYear();
     display: inline-flex;
     align-items: center;
     height: var(--touch-target);
-    padding: 0 12px;
-    font-size: 14px;
+    padding: 0 var(--space-md);
+    font-size: var(--fs-caption);
     font-weight: 500;
     text-decoration: none;
   }

@@ -42,7 +42,7 @@ const routes = [
     border-radius: var(--radius-sm);
     background: var(--bg-muted);
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: var(--fs-code);
     color: var(--fg-muted);
   }
 
@@ -63,7 +63,7 @@ const routes = [
     justify-content: space-between;
     gap: var(--space-md);
     min-height: 64px;
-    padding: 0 12px;
+    padding: 0 var(--space-md);
     text-decoration: none;
   }
 
@@ -80,7 +80,7 @@ const routes = [
 
   .path {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--fs-code);
     color: var(--fg-subtle);
   }
 
@@ -88,7 +88,7 @@ const routes = [
     .page.not-found {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 480px;
-      gap: 80px;
+      gap: var(--space-4xl);
       align-items: center;
       padding-block: var(--space-4xl);
     }

@@ -115,7 +115,7 @@ const jsonLd = {
   .post-meta {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-md);
   }
 
   .tags {
@@ -132,11 +132,11 @@ const jsonLd = {
     display: inline-flex;
     align-items: center;
     height: 28px;
-    padding: 0 10px;
+    padding: 0 var(--space-sm);
     border-radius: var(--radius-sm);
     background: var(--bg-muted);
     color: var(--fg-muted);
-    font-size: 12px;
+    font-size: var(--fs-micro);
     font-weight: 500;
     text-decoration: none;
   }
@@ -147,7 +147,7 @@ const jsonLd = {
   }
 
   .post-lead {
-    font-size: 1.125rem;
+    font-size: var(--fs-body-lg);
     line-height: 1.65;
     color: var(--fg-muted);
   }
@@ -160,7 +160,7 @@ const jsonLd = {
 
   .kicker {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: var(--fs-caption);
     font-weight: 500;
     line-height: 1.5;
     letter-spacing: 0;
@@ -176,13 +176,13 @@ const jsonLd = {
   }
 
   .related-posts h2 {
-    font-size: 1.25rem;
+    font-size: var(--fs-h5);
   }
 
   .related-posts ul {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--space-lg);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -196,26 +196,21 @@ const jsonLd = {
 
   .related-posts .title-link {
     font-family: var(--font-display);
-    font-size: 1.125rem;
+    font-size: var(--fs-body-lg);
     font-weight: 600;
     line-height: 1.35;
   }
 
   @media (min-width: 768px) {
     .post-page {
-      gap: 80px;
+      gap: var(--space-4xl);
       padding-block: var(--space-2xl) var(--space-4xl);
-    }
-
-    .post-lead {
-      font-size: 1.25rem;
     }
 
     .post-meta {
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-md);
     }
   }
 </style>

@@ -122,7 +122,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
   /* eyebrow: chữ hoa, tracking 0.12em, màu link, chỉ đứng trên tiêu đề. */
   .eyebrow {
     font-family: var(--font-display);
-    font-size: 12px;
+    font-size: var(--fs-micro);
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.12em;
@@ -146,23 +146,23 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
   .facts > div {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-sm);
     min-width: 0;
   }
 
   .facts dt {
-    font-size: 14px;
+    font-size: var(--fs-caption);
     color: var(--fg-subtle);
   }
 
   .facts dd {
-    font-size: 1rem;
+    font-size: var(--fs-body);
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
   .facts .stack {
-    font-size: 14px;
+    font-size: var(--fs-caption);
     color: var(--fg);
   }
 
@@ -194,7 +194,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
   .decisions li {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-sm);
     padding: var(--space-lg);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -203,12 +203,12 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
 
   .num {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--fs-code);
     color: var(--link);
   }
 
   .decisions h3 {
-    font-size: 1.25rem;
+    font-size: var(--fs-h5);
   }
 
   .decisions p {
@@ -232,7 +232,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
 
   /* Thân Markdown lặp lại tiêu đề Vấn đề/Quyết định/Kết quả ở cấp h2; dưới "Chi tiết" chúng là cấp con. */
   .details :global(h2) {
-    font-size: 1.25rem;
+    font-size: var(--fs-h5);
   }
 
   .posts-section {
@@ -252,7 +252,7 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     }
 
     .outcome {
-      padding: 40px;
+      padding: var(--space-2xl);
     }
 
     .posts {

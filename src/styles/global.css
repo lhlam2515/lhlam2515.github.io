@@ -19,6 +19,14 @@
   --fs-prose: 1.0625rem;
   --fs-code: 0.8125rem;
 
+  /* Cỡ cố định của các style chữ trong design system. tokens.css không có
+     chúng vì style chữ không phải token; viết bằng rem để phóng to được (RD-003). */
+  --fs-h5: 1.25rem;       /* h5: tiêu đề thẻ, wordmark */
+  --fs-body-lg: 1.125rem; /* body-lg: chữ dẫn */
+  --fs-body: 1rem;        /* body: chữ UI */
+  --fs-caption: 0.875rem; /* caption: metadata, nút, link chữ */
+  --fs-micro: 0.75rem;    /* micro và eyebrow: badge, tag, nhãn chữ hoa */
+
   /* Hover của link: đậm hơn `link` một bậc trong cả hai theme. */
   --link-hover: var(--primary-700);
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -68,7 +76,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--fs-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -168,7 +176,7 @@ a:hover {
   border-radius: var(--radius-md);
   background: var(--action);
   color: var(--fg-on-primary);
-  font-size: 14px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   text-decoration: none;
 }
@@ -238,14 +246,14 @@ a:hover {
 /* body-lg: chữ dẫn dưới tiêu đề trang. */
 .lead {
   max-width: 640px;
-  font-size: 1.125rem;
+  font-size: var(--fs-body-lg);
   line-height: 1.65;
   color: var(--fg-muted);
 }
 
 /* caption: ngày đăng, vai trò, số bài. */
 .meta {
-  font-size: 14px;
+  font-size: var(--fs-caption);
   line-height: 1.5;
   color: var(--fg-subtle);
 }
@@ -254,12 +262,12 @@ a:hover {
 .stack {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-sm) 12px;
+  gap: var(--space-sm) var(--space-md);
   margin: 0;
   padding: 0;
   list-style: none;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-code);
   color: var(--fg-subtle);
 }
 
@@ -269,7 +277,7 @@ a:hover {
   align-items: center;
   align-self: flex-start;
   min-height: var(--touch-target);
-  font-size: 14px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   text-decoration: none;
 }
@@ -309,7 +317,7 @@ a:hover {
 
 .prose h3 {
   margin-top: 1.75em;
-  font-size: 1.25rem;
+  font-size: var(--fs-h5);
 }
 
 .prose h2 + *,
@@ -343,7 +351,7 @@ a:hover {
 }
 
 .prose :not(pre) > code {
-  padding: 2px 6px;
+  padding: 0.125em var(--space-xs);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-muted);
@@ -366,7 +374,7 @@ a:hover {
 @media (min-width: 768px) {
   .prose pre {
     margin-inline: 0;
-    padding: 20px var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
   }

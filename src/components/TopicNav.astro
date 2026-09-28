@@ -47,12 +47,12 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
     display: inline-flex;
     align-items: center;
     height: var(--touch-target);
-    padding: 0 14px;
+    padding: 0 var(--space-md);
     border: 1px solid var(--border-control);
     border-radius: var(--radius-md);
     background: var(--bg);
     color: var(--fg);
-    font-size: 14px;
+    font-size: var(--fs-caption);
     font-weight: 500;
     text-decoration: none;
   }
@@ -60,12 +60,6 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
   .chip:hover {
     background: var(--primary-tint);
     color: var(--fg);
-  }
-
-  @media (min-width: 768px) {
-    .chip {
-      padding: 0 var(--space-md);
-    }
   }
 
   /* Trang chủ, laptop: cột chủ đề dạng danh sách chữ (RD-005). */
@@ -80,7 +74,7 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
       padding: 0;
       border: 0;
       background: none;
-      font-size: 16px;
+      font-size: var(--fs-body);
     }
 
     .column .chip:hover {

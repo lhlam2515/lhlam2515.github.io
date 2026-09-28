@@ -27,7 +27,7 @@ const { pubDate } = post.data;
   .post-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-sm);
   }
 
   h3 {
@@ -36,14 +36,8 @@ const { pubDate } = post.data;
 
   p {
     max-width: 680px;
-    font-size: 1rem;
+    font-size: var(--fs-body);
     line-height: 1.6;
     color: var(--fg-muted);
-  }
-
-  @media (min-width: 768px) {
-    .post-item {
-      gap: var(--space-sm);
-    }
   }
 </style>

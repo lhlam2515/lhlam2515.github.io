@@ -84,7 +84,7 @@ const url = projectUrl(project);
   }
 
   .summary {
-    font-size: 1rem;
+    font-size: var(--fs-body);
     line-height: 1.6;
     color: var(--fg-muted);
   }
@@ -93,7 +93,7 @@ const url = projectUrl(project);
   dl {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-md);
     padding-top: var(--space-md);
     border-top: 1px solid var(--border);
   }
@@ -101,17 +101,17 @@ const url = projectUrl(project);
   dl > div {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-xs);
   }
 
   dt {
-    font-size: 14px;
+    font-size: var(--fs-caption);
     line-height: 1.5;
     color: var(--fg-subtle);
   }
 
   dd {
-    font-size: 15px;
+    font-size: var(--fs-body);
     line-height: 1.5;
     color: var(--fg);
   }
@@ -143,13 +143,12 @@ const url = projectUrl(project);
     }
 
     .body {
-      gap: 20px;
+      gap: var(--space-lg);
     }
 
     dl {
       display: grid;
       grid-template-columns: 96px minmax(0, 1fr);
-      padding-top: 20px;
     }
 
     dl > div {
