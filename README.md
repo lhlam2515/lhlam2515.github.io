@@ -20,30 +20,36 @@ Lý do của từng lựa chọn nằm trong [docs/architecture.md](docs/archite
 
 ## Chạy local
 
-Yêu cầu: Node.js 24 (trùng phiên bản Node mặc định của workflow deploy).
+Yêu cầu: Node.js 22.12 trở lên (theo `engines` trong `package.json`) và pnpm 12 (workflow deploy dùng `pnpm@12.6.0`).
 
 ```bash
-npm install
-npm run dev       # dev server tại http://localhost:4321
-npm run build     # astro check + build ra dist/
-npm run preview   # xem bản build
+pnpm install
+pnpm dev          # dev server tại http://localhost:4321
+pnpm build        # astro check → build ra dist/ → kiểm tra link nội bộ
+pnpm preview      # xem bản build
 ```
+
+Build cục bộ không cần biến môi trường: không có `SITE_URL` thì `site` là `http://localhost:4321`. Ở CI, `SITE_URL` lấy từ Settings → Pages.
 
 ## Cấu trúc thư mục
 
 ```text
 ├─ .github/workflows/deploy.yml
-├─ docs/                   # tài liệu kiến trúc, ADR
-├─ public/                 # CNAME, favicon, robots.txt, ảnh OG mặc định
+├─ docs/                   # kiến trúc (ADR), kiến trúc thông tin (IA), responsive (RD)
+├─ public/                 # favicon
 ├─ src/
+│  ├─ assets/              # font tự host, ảnh chân dung
 │  ├─ content/
 │  │  ├─ blog/vi/          # bài viết
-│  │  └─ projects/vi/      # case study dự án
+│  │  ├─ projects/vi/      # case study dự án
+│  │  └─ tags/tags.yaml    # từ vựng tag
 │  ├─ content.config.ts    # schema các collection
-│  ├─ layouts/
+│  ├─ lib/                 # truy vấn nội dung, slug, thông tin site
+│  ├─ integrations/        # check-links.ts: kiểm link nội bộ sau build
+│  ├─ layouts/             # Base, Post, Project
 │  ├─ components/
 │  ├─ pages/
-│  └─ styles/
+│  └─ styles/              # tokens.css (sinh từ design system), global.css
 └─ astro.config.mjs
 ```
 
@@ -60,9 +66,12 @@ description: "Vì sao chọn SSG thuần trên GitHub Pages"
 slug: kien-truc-jamstack
 pubDate: 2026-09-27
 tags: [architecture, astro]
+relatedProjects: [sojdev-site]   # tuỳ chọn
 draft: false
 ---
 ```
+
+`tags` gồm 1–4 tag, và mỗi tag phải được khai báo trước trong `src/content/tags/tags.yaml`. Tag mới thì thêm vào đó trước, rồi mới gắn vào bài. `relatedProjects` trỏ tới `slug` của case study; trang dự án tự liệt kê các bài trỏ về nó.
 
 ### Case study dự án
 
@@ -79,14 +88,18 @@ Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu tr�
 Mỗi lần push lên `main` sẽ kích hoạt workflow `.github/workflows/deploy.yml`:
 
 1. `actions/checkout@v7`
-2. `withastro/action@v6`: cài dependencies, chạy `npm run build` (gồm `astro check`)
-3. `actions/deploy-pages@v5`
+2. `actions/configure-pages@v6`: lấy origin của site (github.io hoặc custom domain) làm `SITE_URL`
+3. `withastro/action@v6`: cài dependencies bằng pnpm, chạy `pnpm build` (gồm `astro check` và kiểm tra link)
+4. `actions/deploy-pages@v5`
 
 Build lỗi thì không deploy. Có thể chạy tay từ tab **Actions** (`workflow_dispatch`).
 
 ## Tài liệu
 
 - [Kiến trúc và ADR](docs/architecture.md)
+- [Kiến trúc thông tin: trang, URL, phân loại](docs/content-system.md)
+- [Nguyên tắc responsive](docs/responsive.md)
+- [Hướng dẫn cho AI agent](AGENTS.md) (`CLAUDE.md` là symlink tới file này)
 
 ## License
 
