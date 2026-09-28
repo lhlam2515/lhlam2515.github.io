@@ -11,7 +11,7 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 | Việc | Đọc trước | Sửa ở | Kiểm bằng |
 | --- | --- | --- | --- |
 | Viết hoặc sửa bài blog | `src/content.config.ts` (schema `blog`), mục *Nội dung* bên dưới | `src/content/blog/vi/` | `pnpm build`; bài có ảnh, bảng hoặc khối code dài thì xem thêm trên trình duyệt |
-| Viết hoặc sửa case study | Schema `projects`, bài mẫu `src/content/projects/vi/sojdev-site.md` | `src/content/projects/vi/` | Như trên |
+| Viết hoặc sửa case study | IA-007 trong `docs/content-system.md`, schema `projects`, bài mẫu `src/content/projects/vi/sojdev-site.md` | `src/content/projects/vi/` | Như trên |
 | Thêm tag | IA-002 trong `docs/content-system.md` | `src/content/tags/tags.yaml` | `pnpm build` |
 | Thêm hoặc đổi trang, route, URL | IA-001, IA-004 → IA-006, mục *Metadata theo loại trang* | `src/pages/`, `src/layouts/` | `pnpm build` (bắt link hỏng), rồi trình duyệt |
 | Sửa component, CSS, bố cục | RD-001 → RD-007 trong `docs/responsive.md`, mục *CSS* bên dưới | `<style>` trong component, `src/styles/global.css` | Trình duyệt, theo mục *Kiểm tra trước khi báo xong* |
@@ -31,13 +31,13 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 | Mã | File | Phạm vi |
 | --- | --- | --- |
 | ADR-001 → ADR-006 | `docs/architecture.md` | SSG, Astro, nội dung trong repo, dữ liệu API lấy lúc build, hosting/CI, tiếng Việt ở gốc |
-| IA-001 → IA-006 | `docs/content-system.md` | URL, tag, liên kết bài ↔ dự án, điều hướng, trang danh sách, trang chủ, metadata |
+| IA-001 → IA-007 | `docs/content-system.md` | URL, tag, liên kết bài ↔ dự án, điều hướng, trang danh sách, trang chủ, khung case study, metadata |
 | RD-001 → RD-007 | `docs/responsive.md` | Breakpoint, lưới, cỡ chữ, điều hướng, sắp xếp khối, ảnh, container query |
 
 Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 
 - `src/content.config.ts`: schema ba collection `blog`, `projects`, `tags` và `slugId()`.
-- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
+- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, `assertDecisionSections()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
 - `src/lib/slug.ts`: `slugify()`, `SLUG_PATTERN`, `slugSchema`.
 - `src/lib/format.ts`: `formatDate()`, `isoDate()` (định dạng theo UTC).
 - `src/layouts/Base.astro`: mọi trang đi qua layout này.
@@ -51,12 +51,12 @@ Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 - **`slug` không đổi sau khi đăng.** GitHub Pages không có redirect, đổi slug là gãy mọi link cũ. Slug bắt buộc, chỉ gồm `a-z`, `0-9` và `-` đơn, không trùng trong collection; tạo từ tiêu đề bằng `slugify()`.
 - **Tag khai báo trước, gắn sau.** Thêm key vào `src/content/tags/tags.yaml` rồi mới dùng trong bài. Key là thuật ngữ tiếng Anh dạng slug, mỗi bài 1–4 tag.
 - **`relatedProjects` chỉ lưu ở bài.** Chiều ngược (dự án → bài) tính lúc build bằng `getPostsForProject()`, không thêm trường ngược vào `projects`.
-- **Case study là problem → decisions → outcome**, không phải danh sách tính năng. `projects` không có `updatedDate`.
+- **Case study là problem → decisions → outcome**, không phải danh sách tính năng (IA-007). Frontmatter là overview, 2–4 quyết định, mỗi trường có giới hạn độ dài; thân bài là bằng chứng, mỗi quyết định một mục `##` trùng tên và thứ tự với `decisions[].title`. Vượt giới hạn thì viết lại, không cắt câu. `updatedDate` chỉ đặt khi cập nhật `outcome`.
 - **Frontmatter sai schema làm build thất bại, và đó là chủ ý.** Sửa frontmatter cho đúng; không nới schema để build qua.
 
 ### Code
 
-- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang: đây là chỗ duy nhất lọc draft và chạy `assertReferences()` (IA-005).
+- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang: đây là chỗ duy nhất lọc draft và chạy `assertReferences()` (IA-005). Tương tự, **lấy dự án qua `getProjects()`**: đây là chỗ chạy `assertDecisionSections()` (IA-007).
 - **Dựng URL nội bộ bằng `postUrl()`, `projectUrl()`, `tagUrl()`.** URL luôn có `/` cuối (IA-001); link thiếu `/` bị `checkLinks()` bắt và làm build thất bại.
 - **Không `client:*`, không `<script>`, không framework UI.** Mọi thay đổi bố cục làm bằng CSS. ADR-004 có để ngỏ island của dịch vụ bên thứ ba (bình luận, analytics), nhưng thêm cái nào cũng phải hỏi trước.
 - **Ảnh dùng `ImageSlot` hoặc `<Picture>` của `astro:assets`** với tỉ lệ khung cố định, để không gây CLS (RD-006).

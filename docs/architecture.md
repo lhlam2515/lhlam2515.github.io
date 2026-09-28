@@ -337,7 +337,7 @@ Các ADR đã chốt về hướng; ba spike dưới đây cung cấp bằng ch�
   - Slug có dấu, tag có dấu, thiếu slug, thiếu `decisions`, `updatedDate` trước `pubDate` đều làm build thất bại.
   - Slug trùng **không** bị Astro 7.3.5 chặn: check có sẵn chỉ là cảnh báo, và trên data store sạch (mọi lần build ở CI) nó không chạy được vì loader xử lý file song song. Đã tự kiểm tra trong `generateId`.
   - Với dự án có quyết định kiến trúc rõ (chính site này), cấu trúc dùng tự nhiên. Bản nháp case study DevOverflow (dự án làm theo khoá học) cho thấy cấu trúc buộc tách phần theo bài giảng khỏi phần tự quyết, và `role` phải gánh sắc thái đó. Bản nháp đã gỡ khỏi repo; case study này viết lại sau khi xong đợt refactor kiến trúc của DevOverflow.
-  - Còn mở: `problem`, `decisions`, `outcome` bị viết hai lần, một bản tóm tắt trong frontmatter và một bản chi tiết trong thân bài. `outcome` của `sojdev-site` chưa có số liệu; sẽ cập nhật sau spike "Đo baseline", đồng thời dùng làm phép thử cho việc cập nhật một case study đã có.
+  - Còn mở: `problem`, `decisions`, `outcome` bị viết hai lần, một bản tóm tắt trong frontmatter và một bản chi tiết trong thân bài. Đã giải quyết ngày 28/09/2026 bằng IA-007 trong [content-system.md](./content-system.md): mỗi bản có vai trò riêng, và build kiểm hai bản khớp nhau. `outcome` của `sojdev-site` chưa có số liệu; sẽ cập nhật sau spike "Đo baseline", đồng thời dùng làm phép thử cho việc cập nhật một case study đã có.
 - [ ] **Đo baseline** (ADR-001, ADR-004): chạy Lighthouse trước khi thêm bất kỳ island nào.
 - [x] **Kiểm tra IA** (ADR-003, ADR-005): collection `tags` và tham chiếu từ `blog`, `relatedProjects`. Phần dấu `/` cuối đã xong. Kết quả ở [content-system.md — Spike kiểm chứng](./content-system.md#spike-kiểm-chứng).
 

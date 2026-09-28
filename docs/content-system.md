@@ -1,10 +1,10 @@
 # SoJDev Site — Kiến trúc thông tin
 
-Cập nhật: 27/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu nền: [architecture.md](./architecture.md)
+Cập nhật: 28/09/2026 · Tác giả: Lê Hoàng Lâm · Tài liệu nền: [architecture.md](./architecture.md)
 
 ## Phạm vi
 
-Tài liệu này quyết định **cấu trúc** của nội dung: có những trang nào, URL ra sao, người đọc đi từ đâu đến đâu, nội dung được phân loại và liên kết thế nào. Nó không quyết định viết gì (chiến lược nội dung) hay quy trình đăng bài.
+Tài liệu này quyết định **cấu trúc** của nội dung: có những trang nào, URL ra sao, người đọc đi từ đâu đến đâu, nội dung được phân loại và liên kết thế nào. Nó không quyết định viết về chủ đề gì (chiến lược nội dung) hay quy trình đăng bài. Riêng khung của một case study (phần nào ở frontmatter, phần nào ở thân bài, dài bao nhiêu) được quyết định ở IA-007.
 
 Mọi quyết định ở đây kế thừa sáu ADR đã chốt. Chỗ nào cần mở rộng schema của ADR-003 được ghi rõ ở mục [Thay đổi schema](#thay-đổi-schema-so-với-adr-003).
 
@@ -35,6 +35,7 @@ Mọi quyết định ở đây kế thừa sáu ADR đã chốt. Chỗ nào c�
 | IA-004 | Điều hướng | 3 mục chính; tag không lên menu | Có |
 | IA-005 | Trang danh sách | Không phân trang; blog nhóm theo năm | Có |
 | IA-006 | Trang chủ | Định vị + dự án nổi bật + bài mới | Có |
+| IA-007 | Nội dung case study | Frontmatter là overview các quyết định, thân bài là bằng chứng; 2–4 quyết định | Có |
 
 ## IA-001: Sơ đồ trang và URL
 
@@ -187,6 +188,77 @@ Trang chủ phục vụ người đọc đến từ CV; developer đến từ t�
 
 Trang chủ không có nội dung riêng; mọi khối đều lấy từ collection, nên không bao giờ lệch với trang danh sách.
 
+## IA-007: Nội dung case study — frontmatter là overview, thân bài là bằng chứng
+
+### Bối cảnh
+
+Người đọc chính của case study là nhà tuyển dụng và tech lead. Họ cần thấy quá trình suy luận: vấn đề là gì, đã cân nhắc những phương án nào, vì sao chọn, cái giá là gì, và bằng chứng nào cho thấy lựa chọn đó đúng. Một danh sách tính năng không cho thấy điều đó.
+
+Trang `/projects/<slug>/` hiển thị cả hai phần trên cùng một trang: frontmatter thành các mục Vấn đề, Quyết định, Kết quả; thân bài nằm bên dưới (`src/layouts/Project.astro`). Bảng Vấn đề / Quyết định / Kết quả trên trang chủ cũng lấy từ frontmatter.
+
+Case study đầu tiên (`sojdev-site`, bản ngày 27/09/2026) cho thấy điều gì xảy ra khi hai phần không có vai trò rõ:
+
+- Hai bản lệch nhau. Thân bài có quyết định không nằm trong `decisions[]`, và ngược lại.
+- `outcome` không đối chiếu với tiêu chí trong `problem`, và dùng số của giai đoạn scaffold.
+- Bằng chứng mạnh nhất, những chỗ công cụ không làm như tài liệu nói và cách đã xử lý, phần lớn nằm ngoài bài.
+
+### Quyết định
+
+**Frontmatter là overview các quyết định; thân bài là bằng chứng và chi tiết.** Người đọc lướt thấy toàn bộ lập luận ở phần trên; người đọc sâu kiểm được từng điểm ở phần dưới.
+
+| Trường | Vai trò | Độ dài (ký tự) | Viết thế nào |
+| --- | --- | --- | --- |
+| `summary` | Thẻ dự án, meta description | 80–200 | Dự án là gì và điểm đáng chú ý nhất |
+| `role` | Phần việc của tác giả | — | Dự án theo khoá học hoặc làm nhóm: ghi rõ phần nào được cho sẵn, phần nào tự quyết |
+| `problem` | Vấn đề và tiêu chí thành công | 150–350 | Vấn đề và 2–4 tiêu chí kiểm chứng được |
+| `decisions` | Các quyết định kiến trúc | 2–4 phần tử | Xem "Chọn quyết định nào" bên dưới |
+| `decisions[].title` | Tên quyết định | 15–70 | Nêu lựa chọn, không chỉ chủ đề: "Astro thay vì Next.js", không phải "Framework" |
+| `decisions[].rationale` | Tóm tắt lập luận | 120–320 | Khoảng hai câu: chọn gì thay vì gì, vì sao; rồi cái giá chấp nhận |
+| `outcome` | Kết quả | 150–350 | Đối chiếu từng tiêu chí của `problem`; nói rõ phần chưa đo |
+
+Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho lý do. Giới hạn trên giữ mỗi trường ở khoảng hai câu, để thẻ quyết định trong lưới 2 × 2 (RD-005) vẫn đọc được và frontmatter không thành bản thứ hai của thân bài.
+
+**Chọn quyết định nào:**
+
+- Chỉ đưa vào `decisions[]` quyết định có **phương án thay thế thật** và có **bằng chứng trong thân bài**.
+- Lựa chọn hiển nhiên hoặc chưa có bằng chứng: chỉ nhắc ở cuối thân bài, kèm link tới tài liệu kiến trúc của dự án. Đoạn này nằm trong mục cuối cùng hiện có, không tạo mục `##` riêng.
+- Dự án theo khoá học: chỉ đưa quyết định tự đưa ra.
+
+**Thân bài, theo thứ tự:**
+
+1. `## Bối cảnh`: ràng buộc, rủi ro, và vì sao phải tự làm thay vì dùng giải pháp có sẵn.
+2. Mỗi quyết định một mục `## <title>`, **trùng tên và thứ tự** với `decisions[]`. Bên trong gồm bốn phần in đậm: **Phương án đã cân nhắc**, **Vì sao chọn**, **Bằng chứng**, **Cái giá** (kèm điều kiện đảo ngược nếu có).
+3. `## Đối chiếu kết quả`: bảng tiêu chí → kết quả → bằng chứng.
+4. `## Còn mở` (tuỳ chọn): những gì chưa đo hoặc chưa kiểm chứng, kèm kế hoạch.
+5. `## Điều tôi sẽ làm khác` (tuỳ chọn).
+
+**Bằng chứng được tính:**
+
+- Link tới code, commit hoặc lần chạy CI trong repo.
+- Hành vi kiểm chứng được, ví dụ "build thất bại khi slug có dấu".
+- Số đo có nguồn và điều kiện đo.
+- Phát hiện về công cụ, kèm phiên bản.
+
+**Không tính:** số liệu của giai đoạn tạm thời (ví dụ thời gian build lúc scaffold), và claim về chính bài viết ("bài này là một trong hai bài thử").
+
+**Bài chưa hoàn chỉnh vẫn được đăng.** `TODO` trong thân bài, kể cả ở bài `featured`, không làm build thất bại.
+
+### Các phương án
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| **Frontmatter là overview, thân bài là bằng chứng (chọn, 28/09/2026)** | Giữ bảng tóm tắt trên trang chủ và chiều sâu trong case study; hai phần có quan hệ rõ | Mỗi quyết định viết hai lần ở hai độ sâu; giữ đồng bộ cần kiểm tra lúc build |
+| Chỉ frontmatter, render thành trang | Không thể lệch | Mất chiều sâu: phương án đã cân nhắc, phát hiện, code mẫu |
+| Chỉ thân bài, frontmatter chỉ còn `summary` | Một nguồn duy nhất | Trang chủ mất bảng Vấn đề / Quyết định / Kết quả, hoặc phải parse Markdown |
+
+### Hệ quả
+
+- **Khó hơn:** vượt giới hạn độ dài thì phải viết lại, không chỉ cắt câu. Đây là ma sát có chủ ý.
+- **Layout:** thân bài không có tiêu đề bọc ngoài (trước ngày 28/09/2026 là `<h2>` "Chi tiết"). Mỗi mục `##` của thân bài là một `<h2>` ngang cấp với Vấn đề / Quyết định / Kết quả, cả trong cây heading lẫn về cỡ chữ và khoảng cách giữa các mục. Nhờ vậy cây heading không có mục con nào cùng cấp với mục cha.
+- **Để sau:** thẻ quyết định ở phần overview link xuống mục tương ứng trong thân bài.
+- **Đếm độ dài:** Zod đếm theo đơn vị UTF-16. Chữ tiếng Việt dựng sẵn (NFC) là một đơn vị; nếu file lưu ở dạng tổ hợp (NFD), dấu bị đếm riêng.
+- **Điều kiện đảo ngược:** thẻ quyết định ở giới hạn trên bị vỡ trên mobile, hoặc nhiều case study liên tục phải cắt ý để lọt giới hạn → chỉnh con số. Không thay đổi nào ở đây chạm URL.
+
 ## Metadata theo loại trang
 
 | Loại trang | `<title>` | `description` | JSON-LD |
@@ -201,15 +273,20 @@ Canonical luôn là URL tuyệt đối có dấu `/` cuối, dựng từ `site` 
 
 ## Thay đổi schema so với ADR-003
 
-Hai thay đổi là cộng thêm; `blog.tags[]` là trường đã có nhưng bị siết lại:
+Mọi thay đổi dưới đây đã áp dụng. Với `projects` (IA-007, áp dụng ngày 28/09/2026), `decisions` và các giới hạn độ dài là trường đã có nhưng bị siết lại, `updatedDate?` là cộng thêm:
 
 | Collection | Thay đổi | Lý do |
 | --- | --- | --- |
 | `tags` (mới) | Collection dữ liệu: `id` (slug), `label.vi`, `description`, `featured` | IA-002 |
 | `blog` | `tags[]` đổi từ mảng slug tự do (mặc định `[]`) sang tham chiếu `tags`, 1–4 phần tử, bắt buộc | IA-002 |
 | `blog` | `relatedProjects?` tham chiếu `projects` | IA-003 |
+| `projects` | `decisions` từ tối thiểu 1 sang 2–4 phần tử | IA-007 |
+| `projects` | Giới hạn độ dài cho `summary`, `problem`, `outcome`, `decisions[].title`, `decisions[].rationale` | IA-007 |
+| `projects` | `updatedDate?`, vì `outcome` sẽ được cập nhật khi có số đo | IA-007 |
 
 Các bài hiện có đều có 2–3 tag nên đã thoả giới hạn 1–4. Khi tạo collection `tags`, phải khai báo đủ các tag đang dùng: `architecture`, `astro`, `i18n`, `nextjs`, `seo`.
+
+Bản viết lại của `sojdev-site` theo IA-007 thoả mọi giới hạn trên (dài nhất: `rationale` 255, `outcome` 262 ký tự). Schema nằm ở phần `projects` trong `src/content.config.ts`.
 
 `series?` và `projects.tags?` được hoãn theo điều kiện ở IA-002 và IA-003.
 
@@ -222,10 +299,15 @@ Thuộc bước build trong quality gate của ADR-005.
 - Slug bài duy nhất trong `blog`; slug dự án duy nhất trong `projects` (`slugId()`).
 - Slug bài, dự án và tag khớp quy tắc ASCII của ADR-006: chữ thường, số, nối bằng gạch ngang (`slugSchema`).
 
-Cần thêm:
+Đã có (từ spike "Kiểm tra IA"):
 
-- Mọi tag và `relatedProjects` tham chiếu tới entry tồn tại.
-- Mỗi bài có 1–4 tag.
+- Mọi tag và `relatedProjects` tham chiếu tới entry tồn tại (`getPublishedPosts()` trong `src/lib/content.ts`, kiểm cả bài draft).
+- Mỗi bài có 1–4 tag (schema).
+
+Đã có (IA-007):
+
+- Giới hạn số quyết định và độ dài các trường của `projects` (schema).
+- Các mục `##` của thân case study, trừ `Bối cảnh`, `Đối chiếu kết quả`, `Còn mở`, `Điều tôi sẽ làm khác`, phải trùng tên và thứ tự với `decisions[].title` (`assertDecisionSections()`, gọi trong `getProjects()` bằng `project.body`, throw kèm tên file). Mọi trang dự án, kể cả `/projects/<slug>/`, lấy dữ liệu qua `getProjects()`.
 
 ## Stop rules
 
@@ -234,6 +316,8 @@ Cần thêm:
 - Không phân trang, không lọc phía client (IA-005).
 - Không trang lưu trữ theo năm/tháng; nhóm theo năm trên `/blog/` là đủ.
 - Không `series` cho đến khi có series thật đầu tiên.
+- Không quá 4 quyết định trong một case study (IA-007).
+- Không dùng số liệu của giai đoạn tạm thời làm kết quả của case study (IA-007).
 
 ## Stress test: 200 bài, 40 tag
 
@@ -251,8 +335,16 @@ Spike "Kiểm tra IA" trong danh sách spike của architecture.md (spike "Kiể
   - GitHub Pages trả 301 từ `/versions` sang `/versions/` khi thư mục có `index.html` (đo trên `pages.github.com`, cũng chạy trên GitHub Pages). Site này chưa có trang con nên chưa đo trực tiếp được; đo lại trên `/blog` khi trang đó ra đời.
   - `trailingSlash` và `build.format` của Astro v7 khớp IA-001 nhưng không đủ: `trailingSlash` chỉ ràng buộc dev server và trang render theo yêu cầu; với trang prerender, host quyết định. Vì vậy quy ước được giữ bằng kiểm tra link lúc build.
 
+Cho IA-007:
+
+- [x] Áp schema và kiểm tra tiêu đề; xác nhận build thất bại khi một mục `##` của thân bài lệch tên hoặc thứ tự so với `decisions[].title`, và khi có 1 hoặc 5 quyết định. Kết quả ngày 28/09/2026 (Astro 7.3.5, data store sạch): lệch tên, lệch thứ tự, 1 quyết định, 5 quyết định và `rationale` 321 ký tự trở lên đều làm build thất bại, thông báo chỉ rõ file.
+- [x] Xem thẻ quyết định có `rationale` 320 ký tự ở 390 và 1280; xác nhận lưới 2 × 2 vẫn đọc được. Kết quả ngày 28/09/2026, thử với `title` 70 và `rationale` 320 ký tự đặt cạnh một thẻ ở giới hạn dưới (120), cả sáng lẫn tối:
+  - 390: thẻ một cột, rộng 342 px, tiêu đề 3 dòng, `rationale` 9 dòng (khoảng 36 ký tự mỗi dòng); không cuộn ngang.
+  - 1280: lưới 2 × 2, thẻ rộng 588 px, tiêu đề 2 dòng, `rationale` 5 dòng (khoảng 64 ký tự mỗi dòng); không cuộn ngang.
+  - Đọc được ở cả hai độ rộng. Hai thẻ cùng hàng cao bằng nhau, nên thẻ 120 ký tự cạnh thẻ 320 ký tự để lại khoảng trống lớn; chấp nhận được, chưa phải lý do đổi con số.
+
 ## Điểm chưa kiểm chứng
 
-Không còn điểm nào. Điểm cuối cùng đã được kiểm chứng ngày 27/09/2026:
+Không còn điểm nào; các điểm của IA-007 đã được kiểm chứng ngày 28/09/2026 trong spike ở trên. Điểm cuối cùng của IA-001 đến IA-006 đã được kiểm chứng ngày 27/09/2026:
 
 - **`reference()` tới entry không tồn tại** (Astro 7.3.5): lúc sync, Astro log `[ERROR] Invalid content reference` nhưng vẫn build tiếp, và `getEntry()`/`getEntries()` trả `undefined`. Build chỉ thất bại nếu code render tình cờ đọc vào `undefined`, và bài `draft` không được render thì lọt qua. Vì vậy `getPublishedPosts()` trong `src/lib/content.ts` kiểm mọi tag và `relatedProjects` của mọi bài, kể cả draft, và throw với thông báo chỉ rõ file.

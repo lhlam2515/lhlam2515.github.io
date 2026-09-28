@@ -75,7 +75,9 @@ draft: false
 
 ### Case study dự án
 
-Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu trúc **problem → decisions → outcome**, không phải danh sách tính năng. Các trường: `title`, `summary`, `slug`, `role`, `stack`, `problem`, `decisions` (mỗi mục có `title` và `rationale`), `outcome`, `repoUrl?`, `liveUrl?`, `featured`, `order`.
+Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu trúc **problem → decisions → outcome**, không phải danh sách tính năng. Các trường: `title`, `summary`, `slug`, `role`, `stack`, `problem`, `decisions` (mỗi mục có `title` và `rationale`), `outcome`, `updatedDate?`, `repoUrl?`, `liveUrl?`, `featured`, `order`.
+
+Frontmatter là overview, thân bài là bằng chứng: 2–4 quyết định, mỗi trường có giới hạn độ dài, và thân bài có một mục `##` cho mỗi quyết định, trùng tên và thứ tự với `decisions[].title`. Chi tiết và cách viết từng phần ở IA-007 trong [docs/content-system.md](./docs/content-system.md); bài mẫu là `sojdev-site.md`.
 
 ### Quy ước
 
