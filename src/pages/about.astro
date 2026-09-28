@@ -50,17 +50,12 @@ const jsonLd = {
 
 <Base title={`Giới thiệu · ${SITE.name}`} description={home.data.description} jsonLd={jsonLd}>
   <!--
-    Bố cục hồ sơ GitHub (RD-005). Thứ tự HTML là thứ tự đọc trên mobile: tiêu
-    đề và chữ dẫn, hồ sơ, rồi nội dung. Từ 768 grid đặt hồ sơ vào cột trái bằng
+    Bố cục hồ sơ GitHub (RD-005). Thứ tự HTML là thứ tự đọc trên mobile: hồ sơ,
+    tiêu đề và chữ dẫn, rồi nội dung. Từ 768 grid đặt hồ sơ vào cột trái bằng
     grid-column, không dùng order. Thứ tự nội dung: "Tôi làm gì", dự án, cách
     làm việc, học vấn.
   -->
   <div class="container page about">
-    <div class="page-intro intro">
-      <h1>Giới thiệu</h1>
-      <p class="lead">{lead}</p>
-    </div>
-
     <div class="profile">
       <ImageSlot
         class="avatar"
@@ -106,6 +101,11 @@ const jsonLd = {
           ))
         }
       </ul>
+    </div>
+
+    <div class="page-intro intro">
+      <h1>Giới thiệu</h1>
+      <p class="lead">{lead}</p>
     </div>
 
     <div class="content">
@@ -251,21 +251,24 @@ const jsonLd = {
     color: var(--fg-subtle);
   }
 
+  /* Khối liên hệ là thứ người đến từ CV tìm, nên dùng cỡ chữ body chứ không
+     phải caption. Mỗi dòng cao 32 để danh sách gọn: dưới mức 44 của RD-004 nhưng
+     vẫn trên mức 24 của WCAG 2.5.8, như chip tag. */
   .facts {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
     margin: 0;
     padding: 0;
     list-style: none;
-    font-size: var(--fs-caption);
+    font-size: var(--fs-body);
     color: var(--fg-muted);
   }
 
   .facts li {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--space-sm);
+    min-height: 32px;
   }
 
   .facts svg {
@@ -276,15 +279,15 @@ const jsonLd = {
   }
 
   .facts a {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
     text-decoration: none;
+    overflow-wrap: anywhere;
   }
 
   .facts a:hover {
     text-decoration: underline;
-  }
-
-  .facts a {
-    overflow-wrap: anywhere;
   }
 
   /* ---------- Nội dung ---------- */
@@ -516,9 +519,15 @@ const jsonLd = {
       align-items: start;
     }
 
-    .intro,
+    /* Hồ sơ đứng trước trong HTML nên đặt hàng tường minh cho cột phải. */
+    .intro {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
     .content {
       grid-column: 2;
+      grid-row: 2;
     }
 
     .profile {

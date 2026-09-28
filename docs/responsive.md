@@ -124,7 +124,7 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 
 - **Không hamburger, không menu ẩn.** Logo và 3 mục (Dự án, Blog, Giới thiệu) vừa một dòng tới 320. Header cao 56 trên mobile, 72 từ 768.
 - **Logo dưới 768 chỉ còn mark (28/09/2026).** Lockup đủ của design system (mark 20, wordmark 18) cộng 3 mục cỡ 16 đè lên nhau dưới khoảng 380, nên dưới 768 header chỉ hiện mark `<SJ/>` cao 20; từ 768 hiện mark 24 cạnh wordmark 22. Link logo vẫn mang tên "SoJDev, về trang chủ" qua `aria-label`. Chọn bỏ wordmark thay vì thêm mốc ở 380, vì RD-001 chỉ có hai mốc.
-- **Vùng chạm tối thiểu 44 × 44** cho mọi điều khiển độc lập: link điều hướng, nút, nút lọc chủ đề, link "Xem dự án →". Ngoại lệ có chủ ý: chip tag nằm trong dòng meta của bài cao 28, vẫn đạt mức tối thiểu 24 của WCAG 2.5.8.
+- **Vùng chạm tối thiểu 44 × 44** cho mọi điều khiển độc lập: link điều hướng, nút, nút lọc chủ đề, link "Xem dự án →". Ngoại lệ có chủ ý: chip tag nằm trong dòng meta của bài cao 28, vẫn đạt mức tối thiểu 24 của WCAG 2.5.8; danh sách liên hệ trên `/about/` mỗi dòng cao 32, cùng lý do.
 - **Không thông tin nào chỉ xuất hiện khi rê chuột.** Hover chỉ đổi màu.
 - **Chiều cao theo nội dung.** Không section nào đặt chiều cao theo viewport (`100vh`, `100dvh`). Khi điện thoại xoay ngang (844 × 390), hero vẫn hiện đủ tiêu đề và nút.
 
@@ -161,10 +161,10 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | Thẻ dự án liên quan | Ảnh 200 cạnh chữ | Như laptop | Ảnh trên, chữ dưới khi thẻ hẹp hơn 480 (RD-007) |
 | Case study | Nội dung cạnh mục lục 272 cố định trong màn hình; thông tin 4 cột; quyết định 1 cột ở 1024, 2 × 2 từ khoảng 1040 | Không có mục lục trong trang; nút nổi icon hamburger mở mục lục thành bảng nổi; thông tin 2 cột, quyết định 2 × 2 | Như tablet; thông tin 1 cột, quyết định 1 cột |
 | Bảng trong `.prose` | Bảng, cuộn ngang bên trong khi quá rộng | Như laptop | Cột chữ hẹp hơn 36rem: mỗi dòng thành một khối, ô đầu làm tên khối, các ô sau có nhãn cột |
-| `/about/` | Bố cục hồ sơ GitHub: cột hồ sơ 296 (ảnh tròn, tên, nút Email, thông tin kèm icon) cạnh tiêu đề và nội dung | Như laptop, cột hồ sơ 240 | Tiêu đề và chữ dẫn, rồi ảnh tròn 96 cạnh tên, nút Email và thông tin, rồi nội dung |
+| `/about/` | Bố cục hồ sơ GitHub: cột hồ sơ 296 (ảnh tròn, tên, nút Email, thông tin kèm icon) cạnh tiêu đề và nội dung | Như laptop, cột hồ sơ 240 | Một cột: ảnh tròn 96 cạnh tên, nút CV và thông tin trước, rồi tiêu đề và chữ dẫn, rồi nội dung |
 | Footer | Một hàng, cao 160 | Xếp chồng | Xếp chồng, link xuống dòng khi hết chỗ |
 
-**Thứ tự HTML cần chú ý:** trên `/about/`, tiêu đề "Giới thiệu" và chữ dẫn đứng trước khối hồ sơ trong HTML, rồi tới nội dung. Từ 768, grid đặt hồ sơ vào cột trái bằng `grid-column`, không bằng `order`. Nội dung theo thứ tự: khung "Tôi làm gì" kiểu README, dự án tiêu biểu, cách làm việc (thẻ), học vấn mới nhất trước (29/09/2026).
+**Thứ tự HTML cần chú ý:** trên `/about/`, khối hồ sơ đứng trước tiêu đề "Giới thiệu" và chữ dẫn trong HTML, rồi tới nội dung (29/09/2026; trước đó tiêu đề đứng đầu). Từ 768, grid đặt hồ sơ vào cột trái bằng `grid-column`, tiêu đề và nội dung vào cột phải bằng `grid-row` tường minh, không bằng `order`. Thông tin liên hệ cỡ body ở mọi độ rộng; mỗi dòng cao tối thiểu 32 cho gọn, dưới mức 44 của RD-004 nhưng trên mức 24 của WCAG 2.5.8. Nội dung theo thứ tự: khung "Tôi làm gì" kiểu README, dự án tiêu biểu, cách làm việc (thẻ), học vấn mới nhất trước (29/09/2026).
 
 **Trang không bao giờ cuộn ngang.** Khối `<pre>` được cuộn ngang bên trong: WCAG 1.4.10 miễn trừ nội dung cần bố cục hai chiều, và tài liệu giải thích của W3C nêu khối code là ví dụ. Trên mobile, thụt lề trong code mẫu dùng 2 dấu cách để giảm cuộn ngang.
 
