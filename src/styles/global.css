@@ -16,7 +16,6 @@
   --header-h: var(--header-height-mobile);
 
   --fs-post-title: 1.25rem;
-  --fs-prose: 1.0625rem;
   --fs-code: 0.8125rem;
 
   /* Cỡ cố định của các style chữ trong design system. tokens.css không có
@@ -311,10 +310,29 @@ a:hover {
   color: var(--link);
 }
 
+/*
+ * Nội dung liên quan sau thân bài (dự án liên quan, bài liên quan, bài viết về
+ * dự án): phụ, nên tiêu đề nhỏ hơn heading mục của thân bài và tách bằng vạch
+ * nhạt, không bằng vạch đậm của phần trong case study. Dùng chung cho bài viết
+ * và case study.
+ */
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--border);
+}
+
+.related > h2 {
+  font-size: var(--fs-h5);
+  letter-spacing: normal;
+}
+
 /* ---------- Nội dung dài: bài viết và case study (prose) ---------- */
 
 .prose {
-  font-size: var(--fs-prose);
+  font-size: var(--fs-body);
   line-height: 1.75;
   color: var(--fg);
   overflow-wrap: break-word;
@@ -324,9 +342,12 @@ a:hover {
   margin-top: 1.25em;
 }
 
+/* Mục cấp một của thân bài: cùng cỡ, cùng khoảng cách phía trên với mục h3
+   của case study (RD-003). */
 .prose h2 {
-  margin-top: 2em;
-  font-size: 1.5rem;
+  margin-top: var(--section-gap);
+  font-size: var(--fs-h4);
+  letter-spacing: normal;
 }
 
 .prose h3 {

@@ -155,7 +155,7 @@ const toc: TocPart[] = [
 
         {
           posts.length > 0 && (
-            <section class="posts-section" aria-labelledby="rel">
+            <section class="related" aria-labelledby="rel">
               <h2 id="rel">Bài viết về dự án này</h2>
               <div class="posts">
                 {posts.map((post) => (
@@ -377,17 +377,14 @@ const toc: TocPart[] = [
   }
 
   /*
-   * Chữ của case study (Vấn đề, Kết quả, thân bài) dùng `--fs-body`, 1rem. Bốn
-   * phần của một quyết định là chữ in đậm đầu đoạn, không phải heading (IA-007):
-   * chúng cùng cỡ với chữ thường và chỉ khác độ đậm (`.prose strong`), nên dưới
-   * mỗi mục h3 chỉ còn một cấp chữ.
+   * Bốn phần của một quyết định là chữ in đậm đầu đoạn, không phải heading
+   * (IA-007): cùng cỡ với chữ thường, chỉ khác độ đậm (`.prose strong`), nên
+   * dưới mỗi mục h3 chỉ còn một cấp chữ.
+   *
+   * Mục `##` của thân bài (Bối cảnh, từng quyết định, Đối chiếu kết quả) render
+   * thành h3, ngang cấp và cùng cỡ với Vấn đề / Quyết định / Kết quả, và với
+   * mục h2 của bài viết (`.prose h2` trong global.css).
    */
-  .prose {
-    font-size: var(--fs-body);
-  }
-
-  /* IA-007: mục `##` của thân bài (Bối cảnh, từng quyết định, Đối chiếu kết quả)
-     render thành h3, ngang cấp và cùng cỡ với Vấn đề / Quyết định / Kết quả. */
   .details {
     max-width: var(--measure);
   }
@@ -399,12 +396,6 @@ const toc: TocPart[] = [
 
   .details > :global(:first-child) {
     margin-top: 0;
-  }
-
-  .posts-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
   }
 
   .posts {

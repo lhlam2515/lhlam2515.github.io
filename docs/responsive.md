@@ -96,15 +96,14 @@ Không quyết định nào ở đây chạm URL, nên tất cả đảo ngượ
 | `h2` tiêu đề section | 24 | 30 | 32 | `clamp(1.5rem, 1.1rem + 1.6vw, 2rem)` |
 | `h4` tiêu đề dự án nổi bật | 20 | 23 | 24 | `clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem)` |
 | Tiêu đề bài trong danh sách | 20 | 22 | 22 | `1.25rem`, `1.375rem` từ 768 |
-| `h3` mục trong case study | 20 | 23 | 24 | `--fs-h4` |
-| Chữ case study (Vấn đề, Kết quả, thân bài) | 16 | 16 | 16 | `--fs-body`, line-height 1.75; bốn phần của quyết định là chữ in đậm cùng cỡ |
+| Mục của thân bài: `h3` trong case study, `h2` trong bài viết | 20 | 23 | 24 | `--fs-h4` |
+| Chữ thân bài: bài viết và case study (Vấn đề, Kết quả, thân bài) | 16 | 16 | 16 | `--fs-body`, line-height 1.75; bốn phần của quyết định là chữ in đậm cùng cỡ |
 | Chữ dẫn (`body-lg`) | 18 | 18 | 18 | `1.125rem` |
-| Thân bài viết | 17 | 17 | 17 | `1.0625rem`, line-height 1.75 |
 | Chữ UI (`body`) | 16 | 16 | 16 | `1rem` |
 | Code trong khối | 13 | 14 | 14 | `0.8125rem`, `0.875rem` từ 768 |
 
 - `h1` đạt 48 từ khoảng 933 trở lên, nên ở laptop luôn là 48.
-- Mọi cỡ chữ dùng `rem` để người đọc phóng to được. Design system đặt mục tiêu 60–75 ký tự mỗi dòng với cột 720; số ký tự thật ở cỡ 17 chưa đo (xem [Điểm chưa kiểm chứng](#điểm-chưa-kiểm-chứng)).
+- Mọi cỡ chữ dùng `rem` để người đọc phóng to được. Design system đặt mục tiêu 60–75 ký tự mỗi dòng với cột 720; số ký tự thật ở cỡ 16 chưa đo (xem [Điểm chưa kiểm chứng](#điểm-chưa-kiểm-chứng)).
 - Văn bản dài không được đẩy trang rộng ra: thân bài dùng `overflow-wrap: break-word`, code nội dòng và URL dài dùng `overflow-wrap: anywhere`.
 
 ### Các phương án
@@ -232,7 +231,6 @@ Component xuất hiện ở nhiều độ rộng cột đổi bố cục theo **
   --fs-h2: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
   --fs-h4: clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem);
   --fs-post-title: 1.25rem;
-  --fs-prose: 1.0625rem;
   --fs-code: 0.8125rem;
 }
  
@@ -290,7 +288,7 @@ Các giá trị của tài liệu này đã có trong design system SoJDev từ 
 | Header 56 / 72 | `header-height-mobile`, `header-height` | `layout` |
 | Vùng chạm 44 | `touch-target` | `layout` |
 | Tiêu đề co giãn | `fs-h1`, `fs-h2`, `fs-h4` | `fluidType` |
-| Thân bài 17, line-height 1.75 | style `prose` | `type` |
+| Thân bài 16, line-height 1.75 | style `prose` (từ 17 xuống 16 ngày 28/09/2026 để bài viết và case study cùng cỡ) | `type` |
 | `h2` 32 trên laptop | style `h2` (600, -0.01em) | `type` |
 | Khoảng cách section 48 / 64 / 96 | `space-2xl`, `space-3xl`, `space-4xl` (usage đã ghi theo khoảng) | `spacing` |
 
@@ -341,7 +339,7 @@ Gộp vào spike "Đo baseline" của architecture.md:
 
 - `sizes` do `layout` của `astro:assets` tự sinh có khớp độ rộng cột trong lưới hay không, hay luôn phải ghi đè.
 - Cách tốt nhất trên Astro v7 để làm ảnh khác nhau theo màn hình (art direction): `<Picture>` hỗ trợ trực tiếp, hay phải dựng `<picture>` bằng tay với `getImage()`.
-- Số ký tự mỗi dòng thật của Geist cỡ 17 trong cột 720, so với mục tiêu 60–75 của design system.
+- Số ký tự mỗi dòng thật của Geist cỡ 16 trong cột 720, so với mục tiêu 60–75 của design system.
 - Tỉ lệ thiết bị thật của người đọc (xem Drivers).
 
 ## Nguồn

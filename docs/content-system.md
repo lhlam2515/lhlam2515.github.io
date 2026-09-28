@@ -154,7 +154,7 @@ Hai loại nội dung phục vụ hai người đọc khác nhau, nhưng giá tr
 - **Tag không lên menu chính.** Đường vào tag: nút lọc `featured` trên `/blog/`, tag trên mỗi bài, link "Mọi chủ đề" tới `/tags/`.
 - **Footer:** RSS, GitHub, LinkedIn, email; về sau thêm nút chuyển ngôn ngữ.
 - **Không breadcrumb.** Độ sâu tối đa là hai cấp; mỗi trang chi tiết có một link quay về danh sách của nó.
-- **Trang bài:** tiêu đề, ngày đăng, ngày cập nhật (nếu có), tag, nội dung, dự án liên quan, bài liên quan.
+- **Trang bài:** tiêu đề, dẫn (`description`), ngày đăng, ngày cập nhật (nếu có), tag, nội dung, dự án liên quan, bài liên quan. Đầu trang theo thứ tự của case study: tiêu đề, dẫn, rồi ngày và tag dưới một vạch (28/09/2026).
 
 ### Hệ quả
 
