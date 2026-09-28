@@ -36,6 +36,7 @@ Mọi quyết định ở đây kế thừa sáu ADR đã chốt. Chỗ nào c�
 | IA-005 | Trang danh sách | Không phân trang; blog nhóm theo năm | Có |
 | IA-006 | Trang chủ | Định vị + dự án nổi bật + bài mới | Có |
 | IA-007 | Nội dung case study | Frontmatter là overview các quyết định, thân bài là bằng chứng; 2–4 quyết định | Có |
+| IA-008 | Nội dung trang chủ và Giới thiệu | Mỗi trang một file Markdown có schema; `.astro` chỉ giữ bố cục | Có |
 
 ## IA-001: Sơ đồ trang và URL
 
@@ -57,14 +58,14 @@ flowchart TD
 
 | Trang | URL | Nguồn dữ liệu |
 | --- | --- | --- |
-| Trang chủ | `/` | `projects` (featured) + `blog` (mới nhất) |
+| Trang chủ | `/` | `home` (định vị) + `projects` (featured) + `blog` (mới nhất) |
 | Danh sách dự án | `/projects/` | `projects` |
 | Case study | `/projects/<slug>/` | một entry `projects` |
 | Danh sách bài | `/blog/` | `blog` |
 | Bài viết | `/blog/<slug>/` | một entry `blog` |
 | Mọi tag | `/tags/` | từ vựng tag + số bài |
 | Một tag | `/tags/<tag>/` | `blog` lọc theo tag |
-| Giới thiệu | `/about/` | trang tĩnh, JSON-LD `Person` |
+| Giới thiệu | `/about/` | `about`, JSON-LD `Person` |
 | RSS | `/rss.xml` | `blog`, bỏ draft |
 | Không tìm thấy | `/404.html` | trang tĩnh |
 
@@ -181,7 +182,7 @@ Hai loại nội dung phục vụ hai người đọc khác nhau, nhưng giá tr
 
 Trang chủ phục vụ người đọc đến từ CV; developer đến từ tìm kiếm hiếm khi đi qua đây.
 
-1. **Định vị:** một câu nói SoJDev là ai và làm gì, link tới `/about/`.
+1. **Định vị:** một câu nói SoJDev là ai và làm gì, link tới `/about/`. Chữ lấy từ collection `home` (IA-008).
 2. **Dự án nổi bật:** tối đa 3 entry `featured: true`, xếp theo `order`, link "Mọi dự án".
 3. **Bài mới:** 3–5 bài đã đăng gần nhất, link "Mọi bài viết".
 4. **Liên hệ:** các kênh giống footer.
@@ -260,11 +261,46 @@ Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho l�
 - **Đếm độ dài:** Zod đếm theo đơn vị UTF-16. Chữ tiếng Việt dựng sẵn (NFC) là một đơn vị; nếu file lưu ở dạng tổ hợp (NFD), dấu bị đếm riêng.
 - **Điều kiện đảo ngược:** thẻ quyết định ở giới hạn trên bị vỡ trên mobile, hoặc nhiều case study liên tục phải cắt ý để lọt giới hạn → chỉnh con số. Không thay đổi nào ở đây chạm URL.
 
+## IA-008: Nội dung trang chủ và Giới thiệu nằm trong collection
+
+### Bối cảnh
+
+Đến 28/09/2026, chữ của hero trang chủ và toàn bộ trang Giới thiệu viết thẳng trong `index.astro` và `about.astro`, câu định vị nằm trong `src/lib/site.ts`. Đổi định vị một lần phải sửa ba file code, và nội dung nằm lẫn với bố cục và CSS. Tác giả muốn sửa nội dung trong một file Markdown rồi build ra trang, như đang làm với bài viết và case study.
+
+### Quyết định
+
+Hai collection, mỗi trang một file cho mỗi ngôn ngữ, id là thư mục ngôn ngữ:
+
+| Collection | File | Frontmatter | Thân bài |
+| --- | --- | --- | --- |
+| `home` | `src/content/pages/vi/home.md` | `description` (câu định vị: meta description của trang chủ, trang Giới thiệu và RSS), `heading` (H1 hero, cụm nhấn màu bọc trong `*…*`), `lead` | Không dùng; có chữ thì build thất bại |
+| `about` | `src/content/pages/vi/about.md` | `lead`, `principles[]` (`title`, `text`), `education[]` (`period`, `title`, `text`) | Mục "Tôi làm gì"; không có heading |
+
+- **Phần có cấu trúc ở frontmatter, văn xuôi ở thân bài.** Danh sách có trường (nguyên tắc, học vấn) được schema kiểm; đoạn văn nhiều câu viết bằng Markdown, có link.
+- **Heading của section thuộc bố cục.** "Tôi làm gì", "Cách tôi làm việc", "Học vấn" nằm trong `about.astro`, vì chúng gắn với `id`, landmark và CSS. Heading trong thân bài làm build thất bại.
+- **Giới hạn độ dài giữ bố cục.** Hero có ràng buộc ở RD-005: ở 1280 × 800, tiêu đề "Dự án tiêu biểu" phải nằm trong màn hình đầu. Giới hạn nằm ở `src/content.config.ts`.
+- **Ở lại trong code:** ảnh chân dung, nút và link của hero, kênh liên hệ, JSON-LD (`src/lib/site.ts` và trang).
+- **Lấy trang qua `getHomePage()` / `getAboutPage()`** trong `src/lib/content.ts`. `getEntry()` trả `undefined` khi thiếu file; hai hàm này throw kèm đường dẫn, và kiểm thân bài.
+
+### Các phương án
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| **Frontmatter + thân bài Markdown, có schema (chọn)** | Cùng cơ chế với `blog`, `projects`; sai là build thất bại; `.astro` có type | Chữ hero nằm ở frontmatter, không phải văn xuôi |
+| Một file Markdown chia đoạn bằng tag XML (`<hero>…</hero>`), loader tự viết | Một file liền mạch, đọc như tài liệu | Phải tự viết và bảo trì parser; danh sách có trường phải biểu diễn bằng XML; mất kiểm tra theo trường |
+| Giữ trong `.astro` | Không thêm gì | Nội dung lẫn với bố cục; đổi định vị phải sửa nhiều file code |
+
+### Hệ quả
+
+- Thêm tiếng Anh (ADR-006) là thêm `src/content/pages/en/home.md` và `about.md`; trang lấy entry theo id `en`.
+- Hai collection chỉ phục vụ hai trang có sẵn; trang tĩnh mới không tự sinh ra từ file mới (IA-001 vẫn quyết định sơ đồ trang).
+- **Điều kiện đảo ngược:** thêm trang tĩnh thứ ba cùng kiểu (ví dụ `/uses/`) → cân nhắc gộp thành một collection `pages` với schema theo loại trang.
+
 ## Metadata theo loại trang
 
 | Loại trang | `<title>` | `description` | JSON-LD |
 | --- | --- | --- | --- |
-| Trang chủ | `SoJDev` | câu định vị | `WebSite` |
+| Trang chủ | `SoJDev` | câu định vị (`description` của `home`) | `WebSite` |
 | Bài viết | `<title> · SoJDev` | trường `description` | `BlogPosting` (`datePublished`, `dateModified` từ `updatedDate`) |
 | Case study | `<title> · Dự án · SoJDev` | trường `summary` | — |
 | Trang tag | `<label.vi> · SoJDev` | `description` của tag | — |
@@ -285,6 +321,8 @@ Mọi thay đổi dưới đây đã áp dụng. Với `projects` (IA-007, áp d
 | `projects` | Giới hạn độ dài cho `summary`, `problem`, `outcome`, `decisions[].title`, `decisions[].rationale` | IA-007 |
 | `projects` | `updatedDate?`, vì `outcome` sẽ được cập nhật khi có số đo | IA-007 |
 | `projects` | `decisions[].label` bắt buộc, 8–28 ký tự, nhãn trong mục lục | IA-007 |
+| `home` (mới) | `description`, `heading`, `lead`; không thân bài (28/09/2026) | IA-008 |
+| `about` (mới) | `lead`, `principles[]` (2–6), `education[]`; thân bài không heading. Chưa có kinh nghiệm đi làm nên chưa có mục Kinh nghiệm (28/09/2026) | IA-008 |
 | `projects` | `screenshot?`: `light` và `dark?` (2400 × 1500, 16:10), một cặp ảnh dùng cho mọi nơi; thiếu thì hiện khung giữ chỗ (28/09/2026) | RD-006 |
 
 Các bài hiện có đều có 2–3 tag nên đã thoả giới hạn 1–4. Khi tạo collection `tags`, phải khai báo đủ các tag đang dùng: `architecture`, `astro`, `i18n`, `nextjs`, `seo`.
@@ -313,6 +351,11 @@ Thuộc bước build trong quality gate của ADR-005.
 - Các mục `##` của thân case study, trừ `Bối cảnh`, `Đối chiếu kết quả`, `Còn mở`, `Điều tôi sẽ làm khác`, phải trùng tên và thứ tự với `decisions[].title` (`assertDecisionSections()`, gọi trong `getProjects()` bằng `project.body`, throw kèm tên file). Mọi trang dự án, kể cả `/projects/<slug>/`, lấy dữ liệu qua `getProjects()`.
 - Thân case study không có heading `###` trở xuống; bốn phần của quyết định viết bằng chữ in đậm (`assertDecisionSections()`).
 - Heading thân bài phải đã hạ thành `<h3>` lúc render; nếu không (plugin `caseStudyHeadings` không chạy), `Project.astro` throw thay vì dựng mục lục sai.
+
+Đã có (IA-008):
+
+- Giới hạn độ dài của `home` và `about`, `heading` có tối đa một cụm `*…*` (schema).
+- Thiếu `home.md` hoặc `about.md`, `home.md` có thân bài, hay thân `about.md` có heading đều làm build thất bại (`getHomePage()`, `getAboutPage()`).
 
 ## Stop rules
 

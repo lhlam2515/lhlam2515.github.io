@@ -8,13 +8,21 @@ import ProjectCard from "../components/ProjectCard.astro";
 import ProjectFeature from "../components/ProjectFeature.astro";
 import TopicNav from "../components/TopicNav.astro";
 import Base from "../layouts/Base.astro";
-import { getFeaturedProjects, getFeaturedTopics, getPublishedPosts } from "../lib/content";
+import { getFeaturedProjects, getFeaturedTopics, getHomePage, getPublishedPosts } from "../lib/content";
 import { SITE } from "../lib/site";
 
-// IA-006: mọi khối lấy từ collection, trang chủ không có nội dung riêng.
-const [featured, topics, posts] = await Promise.all([getFeaturedProjects(), getFeaturedTopics(), getPublishedPosts()]);
+// IA-006: mọi khối lấy từ collection, trang chủ không có nội dung riêng; chữ
+// của hero nằm ở src/content/pages/vi/home.md (IA-008).
+const [home, featured, topics, posts] = await Promise.all([
+  getHomePage(),
+  getFeaturedProjects(),
+  getFeaturedTopics(),
+  getPublishedPosts(),
+]);
 const [mainProject, ...otherProjects] = featured;
 const latest = posts.slice(0, 5);
+// Schema bảo đảm tối đa một cụm *…*, nên split cho đúng ba phần hoặc một.
+const [before, accent, after] = home.data.heading.split("*");
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -22,19 +30,17 @@ const jsonLd = {
   name: SITE.name,
   url: new URL("/", Astro.site).href,
   inLanguage: "vi",
-  description: SITE.tagline,
+  description: home.data.description,
   author: { "@type": "Person", name: SITE.author },
 };
 ---
 
-<Base title={SITE.name} description={SITE.tagline} jsonLd={jsonLd} home>
+<Base title={SITE.name} description={home.data.description} jsonLd={jsonLd} home>
   <div class="container page home-page">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-text">
-        <h1 id="hero-title">Hệ thống web <span class="accent">rõ ràng</span>, từ yêu cầu đến kiểm thử.</h1>
-        <p class="lead">
-          Tôi là {SITE.author}, fullstack web developer, viết về kiến trúc, yêu cầu, kiểm thử và AI agent.
-        </p>
+        <h1 id="hero-title">{before}{accent && <span class="accent">{accent}</span>}{after}</h1>
+        <p class="lead">{home.data.lead}</p>
         <div class="hero-actions">
           <ButtonLink href="/projects/">Xem dự án</ButtonLink>
           <a class="text-link" href="/about/">Giới thiệu về tôi →</a>

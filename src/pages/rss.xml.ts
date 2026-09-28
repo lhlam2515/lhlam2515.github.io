@@ -1,14 +1,14 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
-import { getPublishedPosts, postUrl } from "../lib/content";
+import { getHomePage, getPublishedPosts, postUrl } from "../lib/content";
 import { SITE } from "../lib/site";
 
 /** RSS của blog, bỏ bài draft (IA-001, IA-005). */
 export const GET: APIRoute = async ({ site }) => {
-  const posts = await getPublishedPosts();
+  const [posts, home] = await Promise.all([getPublishedPosts(), getHomePage()]);
   return rss({
     title: `${SITE.name} — Blog`,
-    description: SITE.tagline,
+    description: home.data.description,
     site: site!,
     items: posts.map((post) => ({
       title: post.data.title,

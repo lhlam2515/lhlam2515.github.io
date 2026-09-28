@@ -42,6 +42,7 @@ Build cục bộ không cần biến môi trường: không có `SITE_URL` thì 
 │  ├─ content/
 │  │  ├─ blog/vi/          # bài viết
 │  │  ├─ projects/vi/      # case study dự án
+│  │  ├─ pages/vi/         # chữ của trang chủ (home.md) và trang Giới thiệu (about.md)
 │  │  └─ tags/tags.yaml    # từ vựng tag
 │  ├─ content.config.ts    # schema các collection
 │  ├─ lib/                 # truy vấn nội dung, slug, thông tin site
@@ -78,6 +79,15 @@ draft: false
 Tạo file trong `src/content/projects/vi/`. Mỗi case study đi theo cấu trúc **problem → decisions → outcome**, không phải danh sách tính năng. Các trường: `title`, `summary`, `slug`, `role`, `stack`, `problem`, `decisions` (mỗi mục có `title`, `label` và `rationale`), `outcome`, `updatedDate?`, `repoUrl?`, `liveUrl?`, `screenshot?` (`light` và `dark?`, ảnh chụp desktop 2400 × 1500 đặt trong `src/assets/projects/`), `featured`, `order`.
 
 Frontmatter là overview, thân bài là bằng chứng: 2–4 quyết định, mỗi trường có giới hạn độ dài, và thân bài có một mục `##` cho mỗi quyết định, trùng tên và thứ tự với `decisions[].title`. Chi tiết và cách viết từng phần ở IA-007 trong [docs/content-system.md](./docs/content-system.md); bài mẫu là `sojdev-site.md`.
+
+### Trang chủ và trang Giới thiệu
+
+Chữ của hai trang này nằm trong `src/content/pages/vi/`, không viết trong file `.astro`:
+
+- `home.md`: chỉ có frontmatter. `description` là câu định vị, dùng làm meta description của trang chủ, trang Giới thiệu và RSS. `heading` là tiêu đề hero; cụm bọc trong `*…*` hiện màu nhấn, tối đa một cụm. `lead` là đoạn dưới tiêu đề.
+- `about.md`: frontmatter gồm `lead`, `principles` (2–6 nguyên tắc, mỗi mục có `title` và `text`) và `education` (mỗi mục có `period`, `title`, `text`; để rỗng thì trang ẩn mục Học vấn). Thân bài là mục "Tôi làm gì", viết Markdown thường, có link được, không dùng heading.
+
+Mỗi trường có giới hạn độ dài để bố cục không vỡ; giới hạn nằm trong `src/content.config.ts`, lý do ở IA-008 trong [docs/content-system.md](./docs/content-system.md). Ảnh chân dung, nút, kênh liên hệ và chức danh (`src/lib/site.ts`) vẫn ở trong code.
 
 ### Quy ước
 

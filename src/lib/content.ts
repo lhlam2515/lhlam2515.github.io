@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, getEntry, type CollectionEntry } from "astro:content";
 import { SLUG_PATTERN } from "./slug";
 
 export type Post = CollectionEntry<"blog">;
@@ -127,6 +127,36 @@ export async function getPostTags(post: Post): Promise<Tag[]> {
   const tags = await getCollection("tags");
   const byId = new Map(tags.map((tag) => [tag.id, tag]));
   return post.data.tags.map(({ id }) => byId.get(id)!);
+}
+
+/**
+ * IA-008: getEntry() trả `undefined` khi thiếu file thay vì báo lỗi, nên trang
+ * sẽ render thiếu chữ mà build vẫn qua.
+ */
+async function getPage<C extends "home" | "about">(collection: C, locale: string): Promise<CollectionEntry<C>> {
+  const page = await getEntry(collection, locale);
+  if (!page) throw new Error(`Thiếu src/content/pages/${locale}/${collection}.md.`);
+  return page as CollectionEntry<C>;
+}
+
+/** Chữ của hero trang chủ và câu định vị (IA-008). */
+export async function getHomePage(locale = "vi"): Promise<CollectionEntry<"home">> {
+  const page = await getPage("home", locale);
+  // Trang chủ chỉ đọc frontmatter; chữ ở thân bài sẽ mất mà không ai biết.
+  if (page.body?.trim()) throw new Error(`${page.filePath}: thân bài không được hiển thị; đưa nội dung vào frontmatter.`);
+  return page;
+}
+
+/** Nội dung trang Giới thiệu (IA-008). */
+export async function getAboutPage(locale = "vi"): Promise<CollectionEntry<"about">> {
+  const page = await getPage("about", locale);
+  // Heading của các mục thuộc bố cục trong about.astro; heading trong thân bài
+  // sẽ lệch cấp và lọt ra ngoài cấu trúc landmark của trang.
+  const headings = [...(page.body ?? "").matchAll(/^#{1,6} +(.+?)\s*$/gm)].map((m) => m[1]);
+  if (headings.length > 0) {
+    throw new Error(`${page.filePath}: thân bài không dùng heading.\n  heading: ${JSON.stringify(headings)}`);
+  }
+  return page;
 }
 
 /** Nhóm theo năm đăng, năm mới nhất trước; giữ thứ tự bài bên trong. */

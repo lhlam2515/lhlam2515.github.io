@@ -18,7 +18,8 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 | Đổi truy vấn nội dung, bài liên quan, lọc draft | IA-003, IA-005 | `src/lib/content.ts` | `pnpm build` |
 | Đổi schema frontmatter hoặc quy tắc slug | *Thay đổi schema so với ADR-003* và *Kiểm tra lúc build* trong `docs/content-system.md` | `src/content.config.ts`, `src/lib/slug.ts` | `pnpm build` sau khi xoá data store (xem *Bẫy*) |
 | Đổi `<head>`, canonical, OG, JSON-LD, RSS, sitemap | Mục *Metadata theo loại trang* | `src/layouts/Base.astro`, `src/pages/rss.xml.ts`, `astro.config.mjs` | `pnpm build` rồi `pnpm preview` (chỉ có sau build) |
-| Đổi tên site, tagline, liên hệ, menu | IA-004 | `src/lib/site.ts` | Trình duyệt ở 320 (header phải vừa một dòng) |
+| Sửa chữ hero, câu định vị, trang Giới thiệu | IA-008, schema `home` và `about` | `src/content/pages/vi/` | `pnpm build`; hero thì xem thêm trình duyệt ở 320 và 1280 × 800 ("Dự án tiêu biểu" phải nằm trong màn hình đầu) |
+| Đổi tên site, chức danh, liên hệ, menu | IA-004 | `src/lib/site.ts` | Trình duyệt ở 320 (header phải vừa một dòng) |
 | Đổi font hoặc token màu, khoảng cách | ADR-006 (font tự host), mục *Token trong design system* trong `docs/responsive.md` | Font: `astro.config.mjs`. Token: **không sửa ở repo**, xem *Hỏi trước* | Trình duyệt, sáng và tối |
 | Đổi build, CI, deploy | ADR-005 trong `docs/architecture.md` | `package.json`, `astro.config.mjs`, `.github/workflows/deploy.yml` | `pnpm build` |
 
@@ -31,13 +32,13 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 | Mã | File | Phạm vi |
 | --- | --- | --- |
 | ADR-001 → ADR-006 | `docs/architecture.md` | SSG, Astro, nội dung trong repo, dữ liệu API lấy lúc build, hosting/CI, tiếng Việt ở gốc |
-| IA-001 → IA-007 | `docs/content-system.md` | URL, tag, liên kết bài ↔ dự án, điều hướng, trang danh sách, trang chủ, khung case study, metadata |
+| IA-001 → IA-008 | `docs/content-system.md` | URL, tag, liên kết bài ↔ dự án, điều hướng, trang danh sách, trang chủ, khung case study, nội dung trang chủ và Giới thiệu, metadata |
 | RD-001 → RD-007 | `docs/responsive.md` | Breakpoint, lưới, cỡ chữ, điều hướng, sắp xếp khối, ảnh, container query |
 
 Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 
-- `src/content.config.ts`: schema ba collection `blog`, `projects`, `tags` và `slugId()`.
-- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, `assertDecisionSections()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
+- `src/content.config.ts`: schema năm collection `blog`, `projects`, `tags`, `home`, `about` và `slugId()`.
+- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, `assertDecisionSections()`, `getHomePage()`, `getAboutPage()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
 - `src/lib/slug.ts`: `slugify()`, `SLUG_PATTERN`, `slugSchema`.
 - `src/lib/format.ts`: `formatDate()`, `isoDate()` (định dạng theo UTC).
 - `src/layouts/Base.astro`: mọi trang đi qua layout này.
@@ -54,11 +55,12 @@ Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 - **Tag khai báo trước, gắn sau.** Thêm key vào `src/content/tags/tags.yaml` rồi mới dùng trong bài. Key là thuật ngữ tiếng Anh dạng slug, mỗi bài 1–4 tag.
 - **`relatedProjects` chỉ lưu ở bài.** Chiều ngược (dự án → bài) tính lúc build bằng `getPostsForProject()`, không thêm trường ngược vào `projects`.
 - **Case study là problem → decisions → outcome**, không phải danh sách tính năng (IA-007). Frontmatter là overview, 2–4 quyết định, mỗi trường có giới hạn độ dài; thân bài là bằng chứng, mỗi quyết định một mục `##` trùng tên và thứ tự với `decisions[].title`. Vượt giới hạn thì viết lại, không cắt câu. `updatedDate` chỉ đặt khi cập nhật `outcome`.
+- **Chữ của trang chủ và trang Giới thiệu nằm trong `src/content/pages/vi/`, không viết trong `.astro`** (IA-008). `home.md` chỉ có frontmatter; thân `about.md` là mục "Tôi làm gì" và không có heading.
 - **Frontmatter sai schema làm build thất bại, và đó là chủ ý.** Sửa frontmatter cho đúng; không nới schema để build qua.
 
 ### Code
 
-- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang: đây là chỗ duy nhất lọc draft và chạy `assertReferences()` (IA-005). Tương tự, **lấy dự án qua `getProjects()`**: đây là chỗ chạy `assertDecisionSections()` (IA-007).
+- **Lấy bài qua `getPublishedPosts()`**, không gọi thẳng `getCollection("blog")` trong trang: đây là chỗ duy nhất lọc draft và chạy `assertReferences()` (IA-005). Tương tự, **lấy dự án qua `getProjects()`**: đây là chỗ chạy `assertDecisionSections()` (IA-007). **Lấy trang qua `getHomePage()` / `getAboutPage()`**, không gọi thẳng `getEntry()`: thiếu file thì `getEntry()` trả `undefined` mà build vẫn qua (IA-008).
 - **Dựng URL nội bộ bằng `postUrl()`, `projectUrl()`, `tagUrl()`.** URL luôn có `/` cuối (IA-001); link thiếu `/` bị `checkLinks()` bắt và làm build thất bại.
 - **Không `client:*`, không `<script>`, không framework UI.** Mọi thay đổi bố cục làm bằng CSS. ADR-004 có để ngỏ island của dịch vụ bên thứ ba (bình luận, analytics), nhưng thêm cái nào cũng phải hỏi trước.
 - **Ảnh dùng `ImageSlot` hoặc `<Picture>` của `astro:assets`** với tỉ lệ khung cố định, để không gây CLS (RD-006).

@@ -111,4 +111,36 @@ const tags = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, tags };
+// IA-008: chữ của trang chủ và trang Giới thiệu. Mỗi ngôn ngữ một thư mục
+// (ADR-006), id của entry là tên thư mục: `vi/about.md` → "vi".
+const pageId = ({ entry }: { entry: string }) => entry.split("/")[0];
+
+const home = defineCollection({
+  loader: glob({ pattern: "*/home.md", base: "./src/content/pages", generateId: pageId }),
+  schema: z.object({
+    // Câu định vị: meta description của trang chủ, trang Giới thiệu và RSS.
+    // 160 là độ dài công cụ tìm kiếm thường hiện hết.
+    description: text(80, 160),
+    // Cụm nhấn màu bọc trong *…*. Giới hạn trên giữ tiêu đề trong ba dòng ở 320,
+    // và cùng `lead` giữ "Dự án tiêu biểu" trong màn hình đầu ở 1280 × 800 (RD-005).
+    heading: text(20, 70).regex(/^[^*]*(\*[^*]+\*[^*]*)?$/, "heading chỉ có tối đa một cụm *nhấn màu*"),
+    lead: text(80, 260),
+  }),
+});
+
+const about = defineCollection({
+  loader: glob({ pattern: "*/about.md", base: "./src/content/pages", generateId: pageId }),
+  schema: z.object({
+    lead: text(80, 300),
+    principles: z
+      .array(z.object({ title: text(5, 40), text: text(20, 140) }))
+      .min(2)
+      .max(6),
+    // Rỗng thì trang ẩn cả mục Học vấn.
+    education: z
+      .array(z.object({ period: z.string().min(1), title: z.string().min(1), text: z.string().min(1) }))
+      .default([]),
+  }),
+});
+
+export const collections = { blog, projects, tags, home, about };

@@ -2,11 +2,9 @@
 export const SITE = {
   name: "SoJDev",
   author: "Lê Hoàng Lâm",
-  jobTitle: "Fullstack web developer",
+  jobTitle: "Software Engineer",
   locale: "vi-VN",
-  /** Câu định vị: description của trang chủ và trang Giới thiệu (content-system.md, Metadata). */
-  tagline:
-    "Lê Hoàng Lâm, fullstack web developer, viết về kiến trúc, yêu cầu, kiểm thử và AI agent.",
+  // Câu định vị nằm ở `description` của src/content/pages/vi/home.md (IA-008).
 } as const;
 
 /**

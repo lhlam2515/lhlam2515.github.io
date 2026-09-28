@@ -2,21 +2,15 @@
 import ButtonLink from "../components/ButtonLink.astro";
 import portrait from "../assets/portrait.jpg";
 import ImageSlot from "../components/ImageSlot.astro";
+import { render } from "astro:content";
 import Base from "../layouts/Base.astro";
+import { getAboutPage, getHomePage } from "../lib/content";
 import { CONTACT, SITE } from "../lib/site";
 
-const principles = [
-  { title: "Nghiệp vụ trước", text: "Bắt đầu từ vấn đề cần giải, không từ công nghệ muốn dùng." },
-  { title: "Kiến trúc vừa đủ", text: "Chọn giải pháp nhỏ nhất đáp ứng ràng buộc, và ghi rõ điều kiện để xem lại." },
-  { title: "Dễ đoán hơn khéo léo", text: "Code rõ ràng, có kiểu dữ liệu, thay vì trừu tượng thông minh." },
-  { title: "Bằng chứng trước khẳng định", text: "Kiểm chứng bằng spike và số đo, ghi rõ điều chưa kiểm chứng." },
-];
-
-// TODO(Lâm): thay placeholder bằng kinh nghiệm thật.
-const experience = [
-  { period: "[Từ] – [Đến]", role: "[Vị trí], [Công ty]", text: "[Một câu về hệ thống bạn đã xây và kết quả của nó.]" },
-  { period: "[Từ] – [Đến]", role: "[Vị trí], [Công ty]", text: "[Một câu về hệ thống bạn đã xây và kết quả của nó.]" },
-];
+// IA-008: chữ của trang nằm ở src/content/pages/vi/about.md; câu định vị ở home.md.
+const [about, home] = await Promise.all([getAboutPage(), getHomePage()]);
+const { lead, principles, education } = about.data;
+const { Content } = await render(about);
 
 const channels = [
   { label: "GitHub", value: CONTACT.github.handle, href: CONTACT.github.url },
@@ -37,7 +31,7 @@ const jsonLd = {
 };
 ---
 
-<Base title={`Giới thiệu · ${SITE.name}`} description={SITE.tagline} jsonLd={jsonLd}>
+<Base title={`Giới thiệu · ${SITE.name}`} description={home.data.description} jsonLd={jsonLd}>
   <!--
     Thứ tự HTML là thứ tự đọc trên mobile: tiêu đề, ảnh, kênh liên hệ, rồi nội
     dung. Trên laptop grid đặt <aside> vào cột trái 400 bằng grid-column
@@ -46,10 +40,7 @@ const jsonLd = {
   <div class="container page about">
     <div class="page-intro intro">
       <h1>Giới thiệu</h1>
-      <p class="lead">
-        Tôi là {SITE.author}, fullstack web developer ở TP. Hồ Chí Minh. Tôi học Khoa học máy tính tại Trường Đại
-        học Khoa học Tự nhiên, ĐHQG-HCM.
-      </p>
+      <p class="lead">{lead}</p>
     </div>
 
     <aside aria-label="Liên hệ">
@@ -85,14 +76,7 @@ const jsonLd = {
       <section aria-labelledby="what">
         <h2 id="what">Tôi làm gì</h2>
         <div class="prose">
-          <p>
-            Tôi làm cả backend lẫn frontend, và dành nhiều thời gian cho những phần trước và sau code: kỹ thuật yêu
-            cầu, kiểm thử, và quy trình phát triển có AI agent hỗ trợ.
-          </p>
-          <p>
-            Site này là một ví dụ: sáu quyết định kiến trúc được ghi thành ADR trước khi viết dòng code đầu tiên.
-            Xem <a href="/projects/sojdev-site/">case study</a>.
-          </p>
+          <Content />
         </div>
       </section>
 
@@ -110,22 +94,24 @@ const jsonLd = {
         </ul>
       </section>
 
-      <section aria-labelledby="exp">
-        <h2 id="exp">Kinh nghiệm</h2>
-        <dl class="experience">
-          {
-            experience.map((e) => (
-              <div>
-                <dt class="meta">{e.period}</dt>
-                <dd>
-                  <span class="role">{e.role}</span>
-                  <p>{e.text}</p>
-                </dd>
-              </div>
-            ))
-          }
-        </dl>
-      </section>
+      {
+        education.length > 0 && (
+          <section aria-labelledby="edu">
+            <h2 id="edu">Học vấn</h2>
+            <dl class="education">
+              {education.map((e) => (
+                <div>
+                  <dt class="meta">{e.period}</dt>
+                  <dd>
+                    <span class="entry-title">{e.title}</span>
+                    <p>{e.text}</p>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )
+      }
     </div>
   </div>
 </Base>
@@ -218,24 +204,24 @@ const jsonLd = {
   }
 
   .principles p,
-  .experience p {
+  .education p {
     font-size: var(--fs-body);
     line-height: 1.6;
     color: var(--fg-muted);
   }
 
-  .experience {
+  .education {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
   }
 
-  .experience > div {
+  .education > div {
     display: grid;
     gap: var(--space-xs);
   }
 
-  .role {
+  .entry-title {
     font-family: var(--font-display);
     font-size: var(--fs-body-lg);
     font-weight: 600;
@@ -254,7 +240,7 @@ const jsonLd = {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .experience > div {
+    .education > div {
       grid-template-columns: 160px minmax(0, 1fr);
       gap: var(--space-lg);
     }
