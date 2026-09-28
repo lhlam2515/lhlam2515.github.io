@@ -8,7 +8,9 @@ import Base from "./Base.astro";
 
 /**
  * Case study (ADR-003): phần tóm tắt problem → decisions → outcome lấy từ
- * frontmatter, phần kể chi tiết là thân Markdown (slot) ở cuối.
+ * frontmatter, phần bằng chứng là thân Markdown (slot) ở cuối (IA-007). Thân
+ * bài không có tiêu đề bọc ngoài: các mục `##` của nó ngang cấp với Vấn đề /
+ * Quyết định / Kết quả trong cây heading.
  */
 interface Props {
   project: Project;
@@ -86,12 +88,9 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
       <p class="prose">{data.outcome}</p>
     </section>
 
-    <section class="narrow" aria-labelledby="details">
-      <h2 id="details">Chi tiết</h2>
-      <div class="prose details">
-        <slot />
-      </div>
-    </section>
+    <div class="prose details">
+      <slot />
+    </div>
 
     {
       posts.length > 0 && (
@@ -230,9 +229,19 @@ const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(
     max-width: var(--measure);
   }
 
-  /* Thân Markdown lặp lại tiêu đề Vấn đề/Quyết định/Kết quả ở cấp h2; dưới "Chi tiết" chúng là cấp con. */
+  /* IA-007: mỗi mục `##` của thân bài (Bối cảnh, từng quyết định, Đối chiếu kết quả)
+     ngang cấp với Vấn đề / Quyết định / Kết quả, nên mang cỡ chữ và khoảng cách của một mục trang. */
+  .details {
+    max-width: var(--measure);
+  }
+
   .details :global(h2) {
-    font-size: var(--fs-h5);
+    margin-top: var(--section-gap);
+    font-size: var(--fs-h2);
+  }
+
+  .details > :global(:first-child) {
+    margin-top: 0;
   }
 
   .posts-section {
