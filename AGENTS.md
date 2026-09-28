@@ -53,6 +53,9 @@ pnpm preview
 - Không thêm `client:*`, `<script>` hay framework UI. Mọi thay đổi bố cục làm bằng CSS (ADR-004, RD).
 - CSS viết mobile-first, chỉ hai mốc `@media (min-width: 768px)` và `(min-width: 1024px)`. Component dùng ở nhiều độ rộng cột thì dùng container query (RD-007).
 - Style đặt trong `<style>` của component. Màu, khoảng cách, cỡ chữ lấy từ biến CSS (`var(--space-lg)`, `var(--fg-muted)`, `var(--fs-h2)`…), không chép số tay.
+  - Khoảng cách chỉ dùng thang `--space-xs` … `--space-5xl` (4, 8, 16, 24, 32, 48, 64, 96, 128). Giá trị lọt giữa hai bậc thì chọn một bậc, không thêm bậc mới.
+  - Cỡ chữ chỉ dùng style của design system: tiêu đề `--fs-h1`/`--fs-h2`/`--fs-h4` (co giãn), `--fs-h5`, `--fs-body-lg`, `--fs-body`, `--fs-caption`, `--fs-micro`, chữ mono `--fs-code`. Các biến cố định khai báo ở đầu `global.css`. Không dùng `px` cho cỡ chữ (RD-003).
+  - Được viết số trực tiếp: viền `1px`, độ rộng cột cố định trong `grid-template-columns`, và kích thước riêng của component (chip 28, hàng 404 cao 64) đúng như design system ghi.
 - **Không sửa tay `src/styles/tokens.css`.** File sinh từ design system SoJDev; đổi giá trị ở design system rồi sinh lại.
 - Font khai báo qua Fonts API trong `astro.config.mjs` (font tự host để đủ glyph tiếng Việt), không dùng Google Fonts.
 - Ảnh dùng `ImageSlot` / `<Picture>` của `astro:assets`, có tỉ lệ khung cố định để không gây CLS (RD-006).
