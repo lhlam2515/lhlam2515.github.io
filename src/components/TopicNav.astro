@@ -62,11 +62,15 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
     color: var(--fg);
   }
 
-  /* Trang chủ, laptop: cột chủ đề dạng danh sách chữ (RD-005). */
+  /*
+   * Trang chủ, laptop: cột chủ đề dạng danh sách chữ (RD-005). Mất viền nút
+   * thì chữ trông như nhãn, nên gạch chân nhạt để thấy là link cả khi không
+   * rê chuột (RD-004), giống link bằng chứng của case study.
+   */
   @media (min-width: 1024px) {
     .column ul {
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-start;
       gap: 0;
     }
 
@@ -75,11 +79,16 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
       border: 0;
       background: none;
       font-size: var(--fs-body);
+      text-decoration: underline;
+      text-decoration-color: var(--border-strong);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
     }
 
     .column .chip:hover {
       background: none;
       color: var(--link);
+      text-decoration-color: currentColor;
     }
   }
 </style>
