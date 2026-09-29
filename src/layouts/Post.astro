@@ -1,9 +1,10 @@
 ---
 import RelatedProjectCard from "../components/RelatedProjectCard.astro";
 import type { Post } from "../lib/content";
-import { getPostTags, getProjectsByIds, getRelatedPosts, postUrl, tagUrl } from "../lib/content";
+import { getPostTags, getProjectsByIds, getRelatedPosts } from "../lib/content";
 import { formatDate, isoDate } from "../lib/format";
 import { SITE } from "../lib/site";
+import { postUrl, tagUrl } from "../lib/urls";
 import Base from "./Base.astro";
 
 /** Trang bài (IA-004): tiêu đề, ngày, tag, nội dung, dự án liên quan, bài liên quan. */

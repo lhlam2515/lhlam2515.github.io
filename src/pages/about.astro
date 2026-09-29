@@ -16,9 +16,10 @@ import portrait from "../assets/portrait.jpg";
 import ButtonLink from "../components/ButtonLink.astro";
 import ImageSlot from "../components/ImageSlot.astro";
 import Base from "../layouts/Base.astro";
-import { getAboutPage, getFeaturedProjects, getHomePage, projectUrl } from "../lib/content";
+import { getAboutPage, getFeaturedProjects, getHomePage } from "../lib/content";
 import { CONTACT, SITE } from "../lib/site";
 import { slugify } from "../lib/slug";
+import { projectUrl } from "../lib/urls";
 
 // IA-008: chữ của trang nằm ở src/content/pages/vi/about.md; câu định vị ở home.md.
 const [about, home, projects] = await Promise.all([getAboutPage(), getHomePage(), getFeaturedProjects()]);

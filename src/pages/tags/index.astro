@@ -1,7 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { getTagsWithCounts, tagUrl } from "../../lib/content";
+import { getTagsWithCounts } from "../../lib/content";
 import { SITE } from "../../lib/site";
+import { tagUrl } from "../../lib/urls";
 
 // IA-005: mọi tag có bài, kèm số bài, nhiều bài trước.
 const tags = await getTagsWithCounts();

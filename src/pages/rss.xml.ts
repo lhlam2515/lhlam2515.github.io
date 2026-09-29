@@ -1,7 +1,8 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
-import { getHomePage, getPublishedPosts, postUrl } from "../lib/content";
+import { getHomePage, getPublishedPosts } from "../lib/content";
 import { SITE } from "../lib/site";
+import { postUrl } from "../lib/urls";
 
 /** RSS của blog, bỏ bài draft (IA-001, IA-005). */
 export const GET: APIRoute = async ({ site }) => {
