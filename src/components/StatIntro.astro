@@ -1,0 +1,145 @@
+---
+/**
+ * Đầu trang danh sách có số liệu tính lúc build thay cho câu dẫn (IA-005):
+ * slot `title` là tiêu đề, slot mặc định là nhóm chip, `stats` là các StatCard.
+ * Dùng cho /projects/. Thẻ có số 0 bị bỏ: số liệu chỉ hiện khi có thật.
+ */
+interface Props {
+  stats: { label: string; lead: string; value: number }[];
+}
+
+const stats = Astro.props.stats.filter((s) => s.value > 0);
+---
+
+<!-- RD-005: thứ tự HTML là thứ tự đọc trên mobile: tiêu đề, số liệu, chip. -->
+<div class="intro">
+  <div class="intro-title">
+    <slot name="title" />
+  </div>
+  <dl class="stats">
+    {
+      stats.map((s) => (
+        <div class="stat">
+          <dt>{s.label}</dt>
+          <dd class="lead-line">{s.lead}</dd>
+          <dd class="value">{s.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <div class="intro-extra">
+    <slot />
+  </div>
+</div>
+
+<style>
+  /*
+   * Dưới 1024: tiêu đề, số liệu, rồi nhóm chip, đúng thứ tự HTML; số liệu là
+   * thứ đọc trước, chip là đường đi tiếp. Laptop: tiêu đề và chip ở 5 cột
+   * trái, số liệu ở 7 cột phải, để đầu trang dùng hết chiều ngang.
+   */
+  .intro {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  /*
+   * StatCard của design system: luôn tối ở cả hai theme (`gradient-dark`), nên
+   * dùng token thang màu (`white`, `neutral-300`, `dark-600`) thay token theo
+   * theme. Mobile: thẻ đầu rộng cả hàng, hai thẻ sau chia đôi; từ 768 một hàng.
+   */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--dark-600);
+    border-radius: var(--radius-lg);
+    background: var(--gradient-dark);
+    box-shadow: var(--shadow-2);
+    color: var(--white);
+  }
+
+  .stat:only-child,
+  .stat:first-child:nth-last-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .stat dt {
+    font-family: var(--font-display);
+    font-size: var(--fs-body-lg);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--white);
+  }
+
+  .lead-line {
+    font-size: var(--fs-caption);
+    line-height: 1.2;
+    color: var(--neutral-300);
+  }
+
+  /* Số đẩy xuống đáy thẻ để các số cùng một đường khi dòng dẫn dài ngắn khác nhau. */
+  .value {
+    margin-top: auto;
+    padding-top: var(--space-sm);
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  @media (min-width: 768px) {
+    .stats {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+    }
+
+    .stat:only-child,
+    .stat:first-child:nth-last-child(3) {
+      grid-column: auto;
+    }
+
+    .stat {
+      padding: var(--space-lg);
+    }
+  }
+
+  /*
+   * Grid chỉ đổi vị trí, không đổi thứ tự đọc (RD-005). Số liệu trải hai hàng
+   * bên phải; hàng chip nhận phần cao dư (`1fr`) để tiêu đề và chip không bị
+   * đẩy xa nhau khi thẻ số liệu cao hơn cột trái.
+   */
+  @media (min-width: 1024px) {
+    .intro {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      grid-template-rows: auto 1fr;
+      column-gap: var(--space-2xl);
+      align-items: start;
+    }
+
+    .intro-title {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .intro-extra {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .stats {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+  }
+</style>

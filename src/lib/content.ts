@@ -190,6 +190,66 @@ export async function getPostsForProject(projectId: string): Promise<Post[]> {
   );
 }
 
+export type ProjectsOverview = {
+  decisionCount: number;
+  /** Quyết định có cả **Phương án đã cân nhắc.** và **Đánh đổi.** trong mục `##` của nó (IA-007). */
+  weighedCount: number;
+  /** Dự án có `repoUrl` / `liveUrl`: người đọc tự kiểm được. */
+  withRepo: number;
+  withLive: number;
+  /** Bài có `relatedProjects` trỏ tới các dự án này, mới nhất trước. */
+  posts: Post[];
+  /** Mọi mục stack, dùng ở nhiều dự án trước, cùng số thì theo thứ tự xuất hiện. */
+  stack: { name: string; count: number }[];
+};
+
+/**
+ * Số liệu đầu trang /projects/, tính lúc build từ collection nên không lệch
+ * với danh sách bên dưới (IA-005). Tag không có ở đây: tag thuộc bài viết
+ * (IA-002), trang dự án chỉ đếm bài qua `relatedProjects` (IA-003).
+ */
+export async function getProjectsOverview(projects: Project[]): Promise<ProjectsOverview> {
+  const ids = new Set(projects.map((p) => p.id));
+  const posts = (await getPublishedPosts()).filter((post) =>
+    post.data.relatedProjects?.some(({ id }) => ids.has(id)),
+  );
+
+  const stackCounts = new Map<string, number>();
+  for (const p of projects) {
+    for (const name of p.data.stack) stackCounts.set(name, (stackCounts.get(name) ?? 0) + 1);
+  }
+  // Map giữ thứ tự chèn và sort của JS ổn định, nên cùng số thì giữ thứ tự xuất hiện.
+  const stack = [...stackCounts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+  return {
+    decisionCount: projects.reduce((sum, p) => sum + p.data.decisions.length, 0),
+    weighedCount: projects.reduce((sum, p) => sum + countWeighedDecisions(p), 0),
+    withRepo: projects.filter((p) => p.data.repoUrl).length,
+    withLive: projects.filter((p) => p.data.liveUrl).length,
+    posts,
+    stack,
+  };
+}
+
+/**
+ * IA-007: mỗi quyết định có bốn phần in đậm, nhưng build chỉ ép tên mục `##`,
+ * không ép đủ bốn phần. Đếm quyết định có cả phần so sánh (**Phương án đã
+ * cân nhắc.**) và phần đánh đổi (**Đánh đổi.**) để số trên /projects/ nói
+ * thật: quyết định thiếu một trong hai thì tỉ lệ tụt, không bị che.
+ */
+function countWeighedDecisions(project: Project): number {
+  const sections = new Map(
+    (project.body ?? "").split(/^## +/m).slice(1).map((s) => {
+      const [heading, ...rest] = s.split("\n");
+      return [heading.trim(), rest.join("\n")] as const;
+    }),
+  );
+  return project.data.decisions.filter(({ title }) => {
+    const section = sections.get(title) ?? "";
+    return /^\*\*Phương án đã cân nhắc\.\*\*/m.test(section) && /^\*\*Đánh đổi\.\*\*/m.test(section);
+  }).length;
+}
+
 export async function getProjectsByIds(ids: string[]): Promise<Project[]> {
   const projects = await getCollection("projects");
   return ids.map((id) => projects.find((p) => p.id === id)!);

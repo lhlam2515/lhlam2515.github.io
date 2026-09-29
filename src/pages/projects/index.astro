@@ -1,8 +1,10 @@
 ---
 import ProjectCard from "../../components/ProjectCard.astro";
 import ProjectFeature from "../../components/ProjectFeature.astro";
+import StatIntro from "../../components/StatIntro.astro";
 import Base from "../../layouts/Base.astro";
-import { getProjects } from "../../lib/content";
+import { getProjects, getProjectsOverview } from "../../lib/content";
+import { formatDate } from "../../lib/format";
 import { SITE } from "../../lib/site";
 
 // IA-005: featured trước, sau đó theo `order`. Dự án featured có ảnh và nhãn
@@ -10,17 +12,72 @@ import { SITE } from "../../lib/site";
 const projects = await getProjects();
 const featured = projects.filter((p) => p.data.featured);
 const others = projects.filter((p) => !p.data.featured);
-const lead = "Mỗi case study trình bày vấn đề, quyết định và kết quả, thay vì danh sách tính năng.";
+const overview = await getProjectsOverview(projects);
+// Không hiện trên trang, chỉ làm meta description: đầu trang là số liệu.
+const description =
+  "Mỗi case study trình bày vấn đề, quyết định và kết quả, thay vì danh sách tính năng.";
+
+// Dòng dẫn là sự thật tính từ nội dung, không phải mô tả lại nhãn:
+// người đọc biết kiểm chứng được tới đâu (mã nguồn, bản chạy), mỗi quyết
+// định có so sánh và đánh đổi không, và dự án còn được viết tiếp không. Đủ cả thì nói gọn, thiếu
+// thì hiện tỉ lệ để chỗ thiếu không bị che.
+const n = projects.length;
+const openLead =
+  overview.withRepo === n && overview.withLive === n
+    ? "Đều mở mã nguồn và có bản đang chạy"
+    : `${overview.withRepo}/${n} mở mã nguồn, ${overview.withLive}/${n} có bản đang chạy`;
+const weighedLead =
+  overview.weighedCount === overview.decisionCount
+    ? "Đi kèm so sánh phương án và đánh đổi"
+    : `${overview.weighedCount}/${overview.decisionCount} kèm so sánh và đánh đổi`;
+const latestPost = overview.posts[0];
+const stats = [
+  { label: "Dự án", lead: openLead, value: n },
+  { label: "Quyết định", lead: weighedLead, value: overview.decisionCount },
+  {
+    label: "Bài viết",
+    lead: latestPost ? `Viết về các dự án này, mới nhất ngày ${formatDate(latestPost.data.pubDate)}` : "",
+    value: overview.posts.length,
+  },
+];
 ---
 
-<Base title={`Dự án · ${SITE.name}`} description={lead}>
+<Base title={`Dự án · ${SITE.name}`} description={description}>
   <div class="container page">
-    <div class="page-intro">
-      <h1>Dự án</h1>
-      <p class="lead">{lead}</p>
-    </div>
+    <StatIntro stats={stats}>
+      <h1 slot="title">Dự án</h1>
+      <div class="tech">
+        <p class="tech-label" id="tech-label">Công nghệ</p>
+        <ul class="tags" aria-labelledby="tech-label">
+          {
+            overview.stack.map(({ name, count }) => (
+              <li class="tag">
+                {name}
+                {count > 1 && (
+                  <span class="count">
+                    <span aria-hidden="true">×{count}</span>
+                    <span class="visually-hidden">
+                      , dùng ở {count} dự án
+                    </span>
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </StatIntro>
 
-    {featured.map((project, i) => <ProjectFeature project={project} summary="role" headingLevel="h2" reverse={i % 2 === 1} />)}
+    {
+      featured.map((project, i) => (
+        <ProjectFeature
+          project={project}
+          summary="role"
+          headingLevel="h2"
+          reverse={i % 2 === 1}
+        />
+      ))
+    }
 
     {
       others.length > 0 && (
@@ -38,6 +95,47 @@ const lead = "Mỗi case study trình bày vấn đề, quyết định và kế
 </Base>
 
 <style>
+  .tech {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .tech-label {
+    font-size: var(--fs-body);
+    line-height: 1.5;
+    color: var(--fg-subtle);
+  }
+
+  /* Tag của design system: chip viền 28, không bấm được nên không cần vùng chạm 44. */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--fg);
+    font-size: var(--fs-micro);
+    font-weight: 500;
+  }
+
+  .count {
+    margin-left: var(--space-xs);
+    color: var(--link);
+    font-weight: 600;
+  }
+
   .others {
     display: flex;
     flex-direction: column;
