@@ -257,7 +257,7 @@ Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho l�
 
 - **Khó hơn:** vượt giới hạn độ dài thì phải viết lại, không chỉ cắt câu. Đây là ma sát có chủ ý.
 - **Cây heading (28/09/2026, thay bản "không tiêu đề bọc ngoài" cùng ngày).** Trang chia hai phần ở cấp `<h2>`: "Tóm tắt" chứa Vấn đề, Quyết định, Kết quả (`<h3>`, lấy từ frontmatter); "Chi tiết" chứa thân bài. Tác giả vẫn viết `##`; lúc render, heading của collection `projects` hạ một cấp (`src/lib/markdown-headings.ts`), nên mục `##` thành `<h3>` ngang cấp với Vấn đề / Quyết định / Kết quả. Trang không có `<h4>`. Bản trước để 11 mục `<h2>` ngang hàng: người đọc không thấy lúc nào rời phần tóm tắt (khoảng 1.240 px) để vào phần bằng chứng (khoảng 5.500 px, 80% trang ở 1280), và mỗi tên quyết định có hai heading ở hai cấp, bản tóm tắt thấp hơn bản chi tiết. Lý do bỏ `<h2>` "Chi tiết" lần đầu là mục con nằm cùng cấp với nó; hạ cấp lúc render giải quyết đúng lỗi đó. Thẻ quyết định ở phần tóm tắt không phải heading, nên mỗi tên quyết định chỉ có một heading.
-- **Điều hướng (28/09/2026):** tiêu đề thẻ quyết định link xuống mục cùng tên trong phần Chi tiết. Mục lục đi theo cây heading: hai phần và "Bài viết về dự án này" ở cấp ngoài, các mục `<h3>` bên trong. Bốn phần của quyết định là chữ in đậm nên không vào mục lục. Mục lục dựng từ `headings` của `render()`, nên thêm mục `##` là tự có trong mục lục. Nếu thân bài không bắt đầu ở `<h3>` (plugin hạ cấp không chạy, ví dụ dev server khởi động trước khi `astro.config.mjs` có plugin), `Project.astro` làm build thất bại thay vì dựng mục lục từ nhầm cấp heading. Quyết định hiện bằng `label` kèm số như trên thẻ, để mọi mục một dòng cao 44 và nhịp đều: với `title` đầy đủ (44–62 ký tự), mục quyết định xuống hai dòng và khoảng trắng giữa các dòng chữ tụt từ 24 xuống 8. Bố cục mục lục theo từng khoảng màn hình nằm ở RD-005.
+- **Điều hướng (28/09/2026):** tiêu đề thẻ quyết định link xuống mục cùng tên trong phần Chi tiết. Mục lục đi theo cây heading: hai phần và "Bài viết về dự án này" ở cấp ngoài, các mục `<h3>` bên trong. Bốn phần của quyết định là chữ in đậm nên không vào mục lục. Mục lục dựng từ `headings` của `render()`, nên thêm mục `##` là tự có trong mục lục. Nếu thân bài không bắt đầu ở `<h3>` (plugin hạ cấp không chạy, ví dụ dev server khởi động trước khi `astro.config.mjs` có plugin), `assertCaseStudyHeadings()` làm build thất bại thay vì dựng mục lục từ nhầm cấp heading. Quyết định hiện bằng `label` kèm số như trên thẻ, để mọi mục một dòng cao 44 và nhịp đều: với `title` đầy đủ (44–62 ký tự), mục quyết định xuống hai dòng và khoảng trắng giữa các dòng chữ tụt từ 24 xuống 8. Bố cục mục lục theo từng khoảng màn hình nằm ở RD-005.
 - **Đếm độ dài:** Zod đếm theo đơn vị UTF-16. Chữ tiếng Việt dựng sẵn (NFC) là một đơn vị; nếu file lưu ở dạng tổ hợp (NFD), dấu bị đếm riêng.
 - **Điều kiện đảo ngược:** thẻ quyết định ở giới hạn trên bị vỡ trên mobile, hoặc nhiều case study liên tục phải cắt ý để lọt giới hạn → chỉnh con số. Không thay đổi nào ở đây chạm URL.
 
@@ -279,7 +279,7 @@ Hai collection, mỗi trang một file cho mỗi ngôn ngữ, id là thư mục 
 - **Phần có cấu trúc ở frontmatter, văn xuôi ở thân bài.** Danh sách có trường (nguyên tắc, học vấn) được schema kiểm; đoạn văn nhiều câu viết bằng Markdown, có link.
 - **Heading của section thuộc bố cục.** "Tôi làm gì", "Cách tôi làm việc", "Học vấn" nằm trong `about.astro`, vì chúng gắn với `id`, landmark và CSS. Heading trong thân bài làm build thất bại.
 - **Giới hạn độ dài giữ bố cục.** Hero có ràng buộc ở RD-005: ở 1280 × 800, tiêu đề "Dự án tiêu biểu" phải nằm trong màn hình đầu. Giới hạn nằm ở `src/content.config.ts`.
-- **Ở lại trong code:** ảnh chân dung, nút và link của hero, kênh liên hệ, JSON-LD (`src/lib/site.ts` và trang).
+- **Ở lại trong code:** ảnh chân dung, nút và link của hero, kênh liên hệ, JSON-LD (`src/lib/site.ts`, `src/lib/structured-data.ts`).
 - **Lấy trang qua `getHomePage()` / `getAboutPage()`** trong `src/lib/content.ts`. `getEntry()` trả `undefined` khi thiếu file; hai hàm này throw kèm đường dẫn, và kiểm thân bài.
 
 ### Các phương án
@@ -342,7 +342,7 @@ Thuộc bước build trong quality gate của ADR-005.
 
 Đã có (từ spike "Kiểm tra IA"):
 
-- Mọi tag và `relatedProjects` tham chiếu tới entry tồn tại (`getPublishedPosts()` trong `src/lib/content.ts`, kiểm cả bài draft).
+- Mọi tag và `relatedProjects` tham chiếu tới entry tồn tại (`assertReferences()` trong `src/lib/checks.ts`, gọi từ `getPublishedPosts()`, kiểm cả bài draft).
 - Mỗi bài có 1–4 tag (schema).
 
 Đã có (IA-007):
@@ -350,7 +350,7 @@ Thuộc bước build trong quality gate của ADR-005.
 - Giới hạn số quyết định và độ dài các trường của `projects` (schema).
 - Các mục `##` của thân case study, trừ `Bối cảnh`, `Đối chiếu kết quả`, `Còn mở`, `Điều tôi sẽ làm khác`, phải trùng tên và thứ tự với `decisions[].title` (`assertDecisionSections()`, gọi trong `getProjects()` bằng `project.body`, throw kèm tên file). Mọi trang dự án, kể cả `/projects/<slug>/`, lấy dữ liệu qua `getProjects()`.
 - Thân case study không có heading `###` trở xuống; bốn phần của quyết định viết bằng chữ in đậm (`assertDecisionSections()`).
-- Heading thân bài phải đã hạ thành `<h3>` lúc render; nếu không (plugin `caseStudyHeadings` không chạy), `Project.astro` throw thay vì dựng mục lục sai.
+- Heading thân bài phải đã hạ thành `<h3>` lúc render; nếu không (plugin `caseStudyHeadings` không chạy), `assertCaseStudyHeadings()` throw thay vì dựng mục lục sai.
 
 Đã có (IA-008):
 
@@ -395,4 +395,4 @@ Cho IA-007:
 
 Không còn điểm nào; các điểm của IA-007 đã được kiểm chứng ngày 28/09/2026 trong spike ở trên. Điểm cuối cùng của IA-001 đến IA-006 đã được kiểm chứng ngày 27/09/2026:
 
-- **`reference()` tới entry không tồn tại** (Astro 7.3.5): lúc sync, Astro log `[ERROR] Invalid content reference` nhưng vẫn build tiếp, và `getEntry()`/`getEntries()` trả `undefined`. Build chỉ thất bại nếu code render tình cờ đọc vào `undefined`, và bài `draft` không được render thì lọt qua. Vì vậy `getPublishedPosts()` trong `src/lib/content.ts` kiểm mọi tag và `relatedProjects` của mọi bài, kể cả draft, và throw với thông báo chỉ rõ file.
+- **`reference()` tới entry không tồn tại** (Astro 7.3.5): lúc sync, Astro log `[ERROR] Invalid content reference` nhưng vẫn build tiếp, và `getEntry()`/`getEntries()` trả `undefined`. Build chỉ thất bại nếu code render tình cờ đọc vào `undefined`, và bài `draft` không được render thì lọt qua. Vì vậy `getPublishedPosts()` gọi `assertReferences()` (`src/lib/checks.ts`) để kiểm mọi tag và `relatedProjects` của mọi bài, kể cả draft, và throw với thông báo chỉ rõ file.

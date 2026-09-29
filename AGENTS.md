@@ -16,8 +16,10 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 | Thêm hoặc đổi trang, route, URL | IA-001, IA-004 → IA-006, mục *Metadata theo loại trang* | `src/pages/`, `src/layouts/` | `pnpm build` (bắt link hỏng), rồi trình duyệt |
 | Sửa component, CSS, bố cục | RD-001 → RD-007 trong `docs/responsive.md`, mục *CSS* bên dưới | `<style>` trong component, `src/styles/global.css` | Trình duyệt, theo mục *Kiểm tra trước khi báo xong* |
 | Đổi truy vấn nội dung, bài liên quan, lọc draft | IA-003, IA-005 | `src/lib/content.ts` | `pnpm build` |
+| Đổi kiểm tra nội dung lúc build | *Kiểm tra lúc build* trong `docs/content-system.md` | `src/lib/checks.ts`; cấu trúc case study ở `src/lib/case-study.ts` | `pnpm build` sau khi xoá data store, cả với nội dung cố ý làm sai |
+| Đổi số liệu đầu /blog/ và /projects/, mục lục năm/tháng | IA-005 | `src/lib/overview.ts`, `src/lib/archive.ts` | `pnpm build` |
 | Đổi schema frontmatter hoặc quy tắc slug | *Thay đổi schema so với ADR-003* và *Kiểm tra lúc build* trong `docs/content-system.md` | `src/content.config.ts`, `src/lib/slug.ts` | `pnpm build` sau khi xoá data store (xem *Bẫy*) |
-| Đổi `<head>`, canonical, OG, JSON-LD, RSS, sitemap | Mục *Metadata theo loại trang* | `src/layouts/Base.astro`, `src/pages/rss.xml.ts`, `astro.config.mjs` | `pnpm build` rồi `pnpm preview` (chỉ có sau build) |
+| Đổi `<head>`, canonical, OG, JSON-LD, RSS, sitemap | Mục *Metadata theo loại trang* | `src/layouts/Base.astro`, `src/lib/structured-data.ts`, `src/pages/rss.xml.ts`, `astro.config.mjs` | `pnpm build` rồi `pnpm preview` (chỉ có sau build) |
 | Sửa chữ hero, câu định vị, trang Giới thiệu | IA-008, schema `home` và `about` | `src/content/pages/vi/` | `pnpm build`; hero thì xem thêm trình duyệt ở 320 và 1280 × 800 ("Dự án tiêu biểu" phải nằm trong màn hình đầu) |
 | Đổi tên site, chức danh, liên hệ, menu | IA-004 | `src/lib/site.ts` | Trình duyệt ở 320 (header phải vừa một dòng) |
 | Đổi font hoặc token màu, khoảng cách | ADR-006 (font tự host), mục *Token trong design system* trong `docs/responsive.md` | Font: `astro.config.mjs`. Token: **không sửa ở repo**, xem *Hỏi trước* | Trình duyệt, sáng và tối |
@@ -38,7 +40,11 @@ Tìm dòng khớp với việc cần làm và đọc cột "Đọc trước" r�
 Các file sau ảnh hưởng toàn site, sửa thì cẩn thận:
 
 - `src/content.config.ts`: schema năm collection `blog`, `projects`, `tags`, `home`, `about` và `slugId()`.
-- `src/lib/content.ts`: mọi truy vấn nội dung, `assertReferences()`, `assertDecisionSections()`, `getHomePage()`, `getAboutPage()`, hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
+- `src/lib/content.ts`: mọi truy vấn nội dung (`getPublishedPosts()`, `getProjects()`, `getHomePage()`, `getAboutPage()`…); đây là chỗ gọi các hàm kiểm tra.
+- `src/lib/checks.ts`: kiểm tra nội dung lúc build, `assertReferences()`, `assertDecisionSections()`, `assertCaseStudyHeadings()`, kiểm thân `home`/`about`.
+- `src/lib/case-study.ts`: cấu trúc case study (IA-007): tách mục `##`, đếm quyết định đủ so sánh và đánh đổi, mục lục, số thứ tự quyết định.
+- `src/lib/urls.ts`: hàm dựng URL `postUrl()`, `projectUrl()`, `tagUrl()`.
+- `src/lib/archive.ts`, `src/lib/overview.ts`, `src/lib/structured-data.ts`: nhóm bài theo năm/tháng, số liệu đầu trang danh sách, JSON-LD.
 - `src/lib/slug.ts`: `slugify()`, `SLUG_PATTERN`, `slugSchema`.
 - `src/lib/format.ts`: `formatDate()`, `isoDate()` (định dạng theo UTC).
 - `src/layouts/Base.astro`: mọi trang đi qua layout này.
@@ -124,7 +130,7 @@ Những việc sau phải được chủ repo đồng ý trước, kể cả khi
 - **Thêm test suite trình duyệt:** Playwright test, `@playwright/test`, hay bước trình duyệt trong CI. `playwright-cli` là công cụ kiểm tra thủ công, không phải quality gate.
 - **Gỡ một trong các cơ chế chặn lỗi dưới đây.** Mỗi cơ chế bù cho một lỗi mà Astro không tự chặn:
   - `slugId()` trong `src/content.config.ts`: Astro 7.3.5 không chặn slug trùng khi data store sạch, tức mọi lần build ở CI.
-  - `assertReferences()` trong `src/lib/content.ts`: `reference()` tới entry không tồn tại chỉ bị log lỗi, build vẫn chạy tiếp.
+  - `assertReferences()` trong `src/lib/checks.ts`: `reference()` tới entry không tồn tại chỉ bị log lỗi, build vẫn chạy tiếp.
   - `prerenderConflictBehavior: "error"` và `checkLinks()` trong `astro.config.mjs`: mặc định Astro chỉ cảnh báo khi hai route sinh cùng URL. `trailingSlash: "always"` chỉ ràng buộc dev server; với trang prerender, `checkLinks()` mới giữ quy ước `/` cuối.
   - `slugify()` tự viết trong `src/lib/slug.ts`: đã so với package `slugify`, kết quả tiếng Việt giống hệt; bài `tieng-viet-o-goc-url` trích nguyên hàm này.
 

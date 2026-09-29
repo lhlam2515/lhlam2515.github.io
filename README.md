@@ -45,7 +45,7 @@ Build cục bộ không cần biến môi trường: không có `SITE_URL` thì 
 │  │  ├─ pages/vi/         # chữ của trang chủ (home.md) và trang Giới thiệu (about.md)
 │  │  └─ tags/tags.yaml    # từ vựng tag
 │  ├─ content.config.ts    # schema các collection
-│  ├─ lib/                 # truy vấn nội dung, slug, thông tin site
+│  ├─ lib/                 # truy vấn và kiểm tra nội dung, slug, thông tin site
 │  ├─ integrations/        # check-links.ts: kiểm link nội bộ sau build
 │  ├─ layouts/             # Base, Post, Project
 │  ├─ components/
