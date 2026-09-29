@@ -1,24 +1,55 @@
 ---
 import PostYearList from "../../components/PostYearList.astro";
+import StatIntro from "../../components/StatIntro.astro";
 import TopicNav from "../../components/TopicNav.astro";
 import Base from "../../layouts/Base.astro";
-import { getFeaturedTopics, getPublishedPosts } from "../../lib/content";
+import { getBlogOverview, getFeaturedTopics, getPublishedPosts } from "../../lib/content";
+import { formatDate } from "../../lib/format";
 import { SITE } from "../../lib/site";
 
 // IA-005: mọi bài trên một trang, nhóm theo năm, không phân trang, không lọc JS.
 const [posts, topics] = await Promise.all([getPublishedPosts(), getFeaturedTopics()]);
-const lead = "Bài viết kỹ thuật về kiến trúc web, kỹ thuật yêu cầu, kiểm thử và AI agent.";
+const overview = await getBlogOverview(posts);
+// Không hiện trên trang, chỉ làm meta description: đầu trang là số liệu, như /projects/.
+const description = "Bài viết kỹ thuật về kiến trúc web, kỹ thuật yêu cầu, kiểm thử và AI agent.";
+
+// Dòng dẫn là một sự thật tính từ nội dung, không phải khẩu hiệu: người đọc
+// biết blog còn viết không, viết về gì, và bài nào có dự án để đối chiếu.
+const latest = posts[0];
+const topLabels = new Intl.ListFormat(SITE.locale, { type: "conjunction" }).format(
+  overview.topTags.map((tag) => tag.data.label.vi),
+);
+const stats = [
+  {
+    label: "Bài viết",
+    lead: latest ? `Mới nhất ngày ${formatDate(latest.data.pubDate)}` : "",
+    value: posts.length,
+  },
+  {
+    label: "Chủ đề",
+    lead: `Viết nhiều nhất về ${topLabels}`,
+    value: overview.tagCounts.size,
+  },
+  {
+    label: "Từ dự án",
+    lead: "Có case study đi kèm để đối chiếu",
+    value: overview.projectPosts.length,
+  },
+];
+
 ---
 
-<Base title={`Blog · ${SITE.name}`} description={lead}>
+<Base title={`Blog · ${SITE.name}`} description={description}>
   <div class="container page blog">
-    <div class="page-intro">
-      <h1>Blog</h1>
-      <p class="lead">{lead}</p>
-    </div>
-    <TopicNav topics={topics}>
-      <li><a class="text-link" href="/tags/">Mọi chủ đề →</a></li>
-    </TopicNav>
+    <StatIntro stats={stats}>
+      <h1 slot="title">Blog</h1>
+      <div class="topics">
+        <p class="topics-label" aria-hidden="true">Chủ đề nổi bật</p>
+        <TopicNav topics={topics} counts={overview.tagCounts}>
+          <li><a class="text-link" href="/tags/">Mọi chủ đề →</a></li>
+        </TopicNav>
+      </div>
+    </StatIntro>
     <PostYearList posts={posts} />
   </div>
 </Base>
@@ -28,7 +59,21 @@ const lead = "Bài viết kỹ thuật về kiến trúc web, kỹ thuật yêu 
     gap: var(--space-2xl);
   }
 
+  .topics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  /* Nhãn nhìn thấy của nav; trình đọc màn hình đã có aria-label của TopicNav. */
+  .topics-label {
+    font-size: var(--fs-body);
+    line-height: 1.5;
+    color: var(--fg-subtle);
+  }
+
   .text-link {
     padding: 0 var(--space-sm);
   }
+
 </style>

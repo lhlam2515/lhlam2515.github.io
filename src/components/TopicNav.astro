@@ -12,21 +12,32 @@ interface Props {
   topics: Tag[];
   label?: string;
   layout?: "row" | "column";
+  /** Số bài theo id tag; có thì chip kèm số, như Tag của /projects/. */
+  counts?: Map<string, number>;
 }
 
-const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.props;
+const { topics, label = "Chủ đề nổi bật", layout = "row", counts } = Astro.props;
 ---
 
 <nav aria-label={label} class:list={["topics", layout]}>
   <ul>
     {
-      topics.map((tag) => (
-        <li>
-          <a class="chip" href={tagUrl(tag)}>
-            {tag.data.label.vi}
-          </a>
-        </li>
-      ))
+      topics.map((tag) => {
+        const count = counts?.get(tag.id);
+        return (
+          <li>
+            <a class="chip" href={tagUrl(tag)}>
+              {tag.data.label.vi}
+              {count && (
+                <span class="count">
+                  <span aria-hidden="true">{count}</span>
+                  <span class="visually-hidden">, {count} bài</span>
+                </span>
+              )}
+            </a>
+          </li>
+        );
+      })
     }
     <slot />
   </ul>
@@ -60,6 +71,12 @@ const { topics, label = "Chủ đề nổi bật", layout = "row" } = Astro.prop
   .chip:hover {
     background: var(--primary-tint);
     color: var(--fg);
+  }
+
+  .count {
+    margin-left: var(--space-sm);
+    color: var(--link);
+    font-weight: 600;
   }
 
   /*

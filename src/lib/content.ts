@@ -113,13 +113,12 @@ export async function getTagsWithCounts(): Promise<TagWithCount[]> {
 }
 
 /**
- * Nút lọc chủ đề (IA-002, IA-004): tag `featured` có bài đã đăng, theo thứ tự
- * khai báo. Tag featured chưa có bài thì chưa có trang, nên không hiện.
+ * Nút lọc chủ đề (IA-002, IA-004): tag `featured` có bài đã đăng, nhiều bài
+ * trước như /tags/, vì nút kèm số bài. Tag featured chưa có bài thì chưa có
+ * trang, nên không hiện.
  */
 export async function getFeaturedTopics(): Promise<Tag[]> {
-  const [tags, withPosts] = await Promise.all([getCollection("tags"), getTagsWithCounts()]);
-  const hasPosts = new Set(withPosts.map(({ tag }) => tag.id));
-  return tags.filter((tag) => tag.data.featured && hasPosts.has(tag.id));
+  return (await getTagsWithCounts()).filter(({ tag }) => tag.data.featured).map(({ tag }) => tag);
 }
 
 /** Nhãn hiển thị của các tag của một bài, theo thứ tự tác giả gắn. */
@@ -248,6 +247,29 @@ function countWeighedDecisions(project: Project): number {
     const section = sections.get(title) ?? "";
     return /^\*\*Phương án đã cân nhắc\.\*\*/m.test(section) && /^\*\*Đánh đổi\.\*\*/m.test(section);
   }).length;
+}
+
+export type BlogOverview = {
+  /** Số bài đã đăng của từng tag, để nút lọc chủ đề kèm số bài. */
+  tagCounts: Map<string, number>;
+  /** Tag có nhiều bài nhất; đồng hạng thì lấy hết. */
+  topTags: Tag[];
+  /** Bài có `relatedProjects`: viết từ dự án có case study để đối chiếu (IA-003). */
+  projectPosts: Post[];
+};
+
+/**
+ * Số liệu đầu trang /blog/, tính từ chính danh sách bài đã lọc draft nên
+ * không lệch với danh sách bên dưới (IA-005).
+ */
+export async function getBlogOverview(posts: Post[]): Promise<BlogOverview> {
+  const withCounts = await getTagsWithCounts();
+  const tagCounts = new Map(withCounts.map(({ tag, count }) => [tag.id, count]));
+  // getTagsWithCounts() đã xếp nhiều bài trước, nên phần tử đầu là mức cao nhất.
+  const max = withCounts[0]?.count ?? 0;
+  const topTags = withCounts.filter(({ count }) => count === max).map(({ tag }) => tag);
+  const projectPosts = posts.filter((post) => (post.data.relatedProjects?.length ?? 0) > 0);
+  return { tagCounts, topTags, projectPosts };
 }
 
 export async function getProjectsByIds(ids: string[]): Promise<Project[]> {
