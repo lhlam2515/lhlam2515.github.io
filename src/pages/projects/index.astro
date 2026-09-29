@@ -5,8 +5,8 @@ import Base from "../../layouts/Base.astro";
 import { getProjects } from "../../lib/content";
 import { SITE } from "../../lib/site";
 
-// IA-005: featured trước, sau đó theo `order`. Dự án featured có ảnh, so le
-// trái/phải trên laptop; dự án còn lại là thẻ chữ.
+// IA-005: featured trước, sau đó theo `order`. Dự án featured có ảnh và nhãn
+// các quyết định, so le trái/phải trên laptop; dự án còn lại là thẻ chữ.
 const projects = await getProjects();
 const featured = projects.filter((p) => p.data.featured);
 const others = projects.filter((p) => !p.data.featured);

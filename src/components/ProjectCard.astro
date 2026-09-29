@@ -2,7 +2,11 @@
 import type { Project } from "../lib/content";
 import { projectUrl } from "../lib/content";
 
-/** Dự án phụ, không ảnh: vai trò, tiêu đề, summary, vài mục stack (IA-005). */
+/**
+ * Dự án phụ, không ảnh: vai trò, tiêu đề, summary, vài mục stack (IA-005).
+ * Cả thẻ bấm được: link tiêu đề phủ lên thẻ bằng ::after, nên trình đọc màn
+ * hình và phím Tab vẫn chỉ gặp một link.
+ */
 interface Props {
   project: Project;
 }
@@ -13,7 +17,9 @@ const { data } = project;
 
 <article class="card">
   <p class="meta">{data.role}</p>
-  <h3><a class="title-link" href={projectUrl(project)}>{data.title}</a></h3>
+  <h3>
+    <a class="title-link" href={projectUrl(project)}>{data.title}<span class="arrow" aria-hidden="true">→</span></a>
+  </h3>
   <p class="summary">{data.summary}</p>
   <ul class="stack" aria-label="Công nghệ">
     {data.stack.slice(0, 4).map((item) => <li>{item}</li>)}
@@ -22,15 +28,50 @@ const { data } = project;
 
 <style>
   .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--border);
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .title-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Vạch trên đổi màu cùng tiêu đề, như viền ảnh của khối dự án nổi bật. */
+  .card:has(.title-link:hover) {
+    border-top-color: var(--link);
+  }
+
+  .card:has(.title-link:hover) .title-link {
+    color: var(--link);
   }
 
   h3 {
     font-size: var(--fs-h5);
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-left: 0.3em;
+    color: var(--link);
+    transition: transform 0.2s var(--ease);
+  }
+
+  .card:has(.title-link:hover) .arrow {
+    transform: translateX(var(--space-xs));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .arrow {
+      transition: none;
+    }
   }
 
   .summary {

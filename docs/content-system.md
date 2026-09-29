@@ -168,7 +168,7 @@ Hai loại nội dung phục vụ hai người đọc khác nhau, nhưng giá tr
 
 - **`/blog/`:** mọi bài đã đăng trên một trang, nhóm theo năm, mới nhất trước. Mỗi dòng: tiêu đề, ngày, `description`. Nút lọc tag `featured` ở đầu trang là link tới `/tags/<tag>/`, không lọc bằng JavaScript.
 - **Không phân trang.** Vài trăm dòng chỉ gồm tiêu đề và mô tả là một trang HTML nhẹ. Phân trang tạo ra các URL `/blog/2/` có nội dung dịch chuyển mỗi lần đăng bài, và người đọc phải bấm qua nhiều trang để quét.
-- **`/projects/`:** dự án `featured` trước, sau đó theo `order`. Mỗi thẻ: tiêu đề, `summary`, `role`, vài mục `stack`.
+- **`/projects/`:** dự án `featured` trước, sau đó theo `order`. Mỗi thẻ: tiêu đề, `summary`, `role`, vài mục `stack`; dự án `featured` có thêm ảnh chụp và nhãn các quyết định (`decisions[].label`, 29/09/2026).
 - **`/tags/`:** mọi tag có bài, kèm số bài, xếp theo số bài giảm dần.
 - **Loại khỏi mọi danh sách:** bài `draft: true`. Quy tắc này áp dụng giống nhau cho `/blog/`, trang tag, bài liên quan, RSS và sitemap, qua một hàm lọc dùng chung.
 
