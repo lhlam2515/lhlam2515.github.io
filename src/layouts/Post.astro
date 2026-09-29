@@ -4,6 +4,7 @@ import type { Post } from "../lib/content";
 import { getPostTags, getProjectsByIds, getRelatedPosts } from "../lib/content";
 import { formatDate, isoDate } from "../lib/format";
 import { SITE } from "../lib/site";
+import { blogPostingJsonLd } from "../lib/structured-data";
 import { postUrl, tagUrl } from "../lib/urls";
 import Base from "./Base.astro";
 
@@ -21,18 +22,7 @@ const [tags, projects, related] = await Promise.all([
 ]);
 const tagLabel = new Map(tags.map((tag) => [tag.id, tag.data.label.vi]));
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  headline: data.title,
-  description: data.description,
-  datePublished: isoDate(data.pubDate),
-  dateModified: isoDate(data.updatedDate ?? data.pubDate),
-  inLanguage: "vi",
-  url: new URL(postUrl(post), Astro.site).href,
-  author: { "@type": "Person", name: SITE.author, url: new URL("/about/", Astro.site).href },
-  keywords: tags.map((tag) => tag.data.label.vi).join(", "),
-};
+const jsonLd = blogPostingJsonLd(post, tags, Astro.site);
 ---
 
 <Base title={`${data.title} · ${SITE.name}`} description={data.description} jsonLd={jsonLd} ogType="article">

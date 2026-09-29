@@ -19,6 +19,7 @@ import Base from "../layouts/Base.astro";
 import { getAboutPage, getFeaturedProjects, getHomePage } from "../lib/content";
 import { CONTACT, SITE } from "../lib/site";
 import { slugify } from "../lib/slug";
+import { personJsonLd } from "../lib/structured-data";
 import { projectUrl } from "../lib/urls";
 
 // IA-008: chữ của trang nằm ở src/content/pages/vi/about.md; câu định vị ở home.md.
@@ -36,17 +37,7 @@ const links = [
   { label: "RSS", value: CONTACT.rss, href: CONTACT.rss, Icon: Rss },
 ];
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: SITE.author,
-  alternateName: SITE.name,
-  jobTitle: SITE.jobTitle,
-  url: new URL("/about/", Astro.site).href,
-  address: { "@type": "PostalAddress", addressLocality: "Thành phố Hồ Chí Minh", addressCountry: "VN" },
-  alumniOf: { "@type": "CollegeOrUniversity", name: SITE.school },
-  sameAs: [CONTACT.github.url, CONTACT.linkedin.url],
-};
+const jsonLd = personJsonLd(Astro.site);
 ---
 
 <Base title={`Giới thiệu · ${SITE.name}`} description={home.data.description} jsonLd={jsonLd}>

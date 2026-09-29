@@ -10,6 +10,7 @@ import TopicNav from "../components/TopicNav.astro";
 import Base from "../layouts/Base.astro";
 import { getFeaturedProjects, getFeaturedTopics, getHomePage, getPublishedPosts } from "../lib/content";
 import { SITE } from "../lib/site";
+import { websiteJsonLd } from "../lib/structured-data";
 
 // IA-006: mọi khối lấy từ collection, trang chủ không có nội dung riêng; chữ
 // của hero nằm ở src/content/pages/vi/home.md (IA-008).
@@ -24,15 +25,7 @@ const latest = posts.slice(0, 5);
 // Schema bảo đảm tối đa một cụm *…*, nên split cho đúng ba phần hoặc một.
 const [before, accent, after] = home.data.heading.split("*");
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: SITE.name,
-  url: new URL("/", Astro.site).href,
-  inLanguage: "vi",
-  description: home.data.description,
-  author: { "@type": "Person", name: SITE.author },
-};
+const jsonLd = websiteJsonLd(Astro.site, home.data.description);
 ---
 
 <Base title={SITE.name} description={home.data.description} jsonLd={jsonLd} home>
