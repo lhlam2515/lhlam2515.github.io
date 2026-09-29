@@ -8,7 +8,7 @@ problem: "Cần một nơi của riêng mình để trình bày dự án và bà
 decisions:
   - title: "SSG thuần bằng Astro, không dùng Next.js static export"
     label: "Astro thay Next.js"
-    rationale: "Chọn Astro thay vì Next.js, stack tôi quen nhất, vì ở chế độ static export Next.js mất phần lớn tính năng như ISR, Redirects, Headers nhưng vẫn gửi React runtime xuống mọi trang. Cái giá là phải học cú pháp .astro và mô hình island."
+    rationale: "Chọn Astro thay vì Next.js, stack tôi quen nhất, vì ở chế độ static export Next.js mất phần lớn tính năng như ISR, Redirects, Headers nhưng vẫn gửi React runtime xuống mọi trang. Đổi lại, phải học cú pháp .astro và mô hình island."
   - title: "Schema nội dung là quality gate trước deploy"
     label: "Schema là quality gate"
     rationale: "Quy ước chỉ ghi trong README sớm muộn sẽ bị vi phạm, nên slug, tag và tham chiếu giữa bài và dự án được kiểm lúc build; sai là không deploy. Hai chỗ Astro không tự chặn, slug trùng và tham chiếu hỏng, tôi phải tự viết kiểm tra."
@@ -47,7 +47,7 @@ Rủi ro tôi lo nhất không phải hiệu năng mà là những quyết đị
 
 **Bằng chứng.** Bản build ngày 28/09/2026 (Astro 7.3.5, 14 trang) có 0 file `.js` trong `dist/`, và trang case study này không có thẻ `<script>` nào. Next.js static export không làm được điều đó, vì vẫn gửi React runtime xuống mọi trang. Output là một thư mục `dist/` deploy nguyên trạng, nên chuyển sang host tĩnh khác chỉ là đổi bước deploy trong [workflow](https://github.com/lhlam2515/lhlam2515.github.io/blob/main/.github/workflows/deploy.yml).
 
-**Cái giá.** Phải học cú pháp `.astro` và mô hình island. Tôi sẽ cân nhắc lại Next.js nếu site cần những trang tương tác phức tạp chiếm phần lớn nội dung, ví dụ demo sống của dự án.
+**Đánh đổi.** Phải học cú pháp `.astro` và mô hình island. Tôi sẽ cân nhắc lại Next.js nếu site cần những trang tương tác phức tạp chiếm phần lớn nội dung, ví dụ demo sống của dự án.
 
 ## Schema nội dung là quality gate trước deploy
 
@@ -69,7 +69,7 @@ Trong lúc thử, tôi gặp hai chỗ Astro 7.3.5 không tự chặn:
 
 Khi dựng pipeline, tôi cũng thấy `astro check` của Astro 7.3.5 in lỗi nhưng trả exit code 0 khi chưa cài `@astrojs/check` và `typescript`, tức là gate trong CI không chặn gì. Tôi thêm hai package này vào devDependencies ([commit `e860027`](https://github.com/lhlam2515/lhlam2515.github.io/commit/e860027)). Từ đó, gate được xác nhận bằng output thật, không chỉ bằng exit code.
 
-**Cái giá.** Thêm tag mới là hai bước: khai báo, rồi gắn. Frontmatter sai thì không đăng được. Cả hai là ma sát có chủ ý.
+**Đánh đổi.** Thêm tag mới là hai bước: khai báo, rồi gắn. Frontmatter sai thì không đăng được. Cả hai là ma sát có chủ ý.
 
 ## URL bất biến: tiếng Việt ở gốc, slug ASCII, luôn có dấu / cuối
 
@@ -87,7 +87,7 @@ Khi dựng pipeline, tôi cũng thấy `astro check` của Astro 7.3.5 in lỗi 
 - `trailingSlash: "always"` của Astro không đủ: nó chỉ ràng buộc dev server và trang render theo yêu cầu, còn với trang prerender thì host quyết định. Vì vậy [`check-links.ts`](https://github.com/lhlam2515/lhlam2515.github.io/blob/main/src/integrations/check-links.ts) quét `dist/` sau build và làm build thất bại khi link nội bộ thiếu dấu `/` cuối hoặc trỏ tới file không tồn tại. Link ngoài không được kiểm, để lỗi mạng của site khác không chặn deploy.
 - GitHub Pages trả 301 từ `/versions` sang `/versions/` khi thư mục có `index.html` (đo trên `pages.github.com`).
 
-**Cái giá.** URL của hai ngôn ngữ không đối xứng, và URL tiếng Việt lẫn slug tag tiếng Anh.
+**Đánh đổi.** URL của hai ngôn ngữ không đối xứng, và URL tiếng Việt lẫn slug tag tiếng Anh.
 
 ## User site trên GitHub Pages, domain nằm ngoài code
 
@@ -100,7 +100,7 @@ Khi dựng pipeline, tôi cũng thấy `astro check` của Astro 7.3.5 in lỗi 
 
 **Bằng chứng.** [`astro.config.mjs`](https://github.com/lhlam2515/lhlam2515.github.io/blob/main/astro.config.mjs) dùng `SITE_URL` làm `site` và làm build thất bại nếu thiếu biến này ở CI, nên canonical và sitemap không thể vô tình trỏ về localhost.
 
-**Cái giá.** Không có preview deploy cho từng pull request, không có HTTP header tùy chỉnh (CSP chỉ đặt được qua thẻ `<meta>`), không có redirect phía server. Tôi sẽ chuyển host nếu chạm giới hạn băng thông 100 GB/tháng, cần header hoặc redirect thật, hoặc site có mục đích thương mại.
+**Đánh đổi.** Không có preview deploy cho từng pull request, không có HTTP header tùy chỉnh (CSP chỉ đặt được qua thẻ `<meta>`), không có redirect phía server. Tôi sẽ chuyển host nếu chạm giới hạn băng thông 100 GB/tháng, cần header hoặc redirect thật, hoặc site có mục đích thương mại.
 
 ## Đối chiếu kết quả
 

@@ -50,8 +50,8 @@ Next.js chỉ thắng ở mức quen thuộc. Hugo và Jekyll nhẹ, nhưng bắ
 
 Tôi có lo rằng một portfolio viết bằng Next.js sẽ là tín hiệu tốt hơn cho người tuyển dụng tìm Next.js developer. Nghĩ kỹ thì portfolio chứng minh năng lực qua các dự án nó trình bày, không qua framework của chính nó. Các dự án Next.js của tôi vẫn nằm trong mục dự án.
 
-## Cái giá phải trả
+## Đánh đổi
 
-Tôi phải học cú pháp `.astro` và mô hình island. Đó là chi phí có thật, nhưng chỉ trả một lần.
+Đổi lại, tôi phải học cú pháp `.astro` và mô hình island. Đó là công sức có thật, nhưng chỉ bỏ ra một lần.
 
-Tôi cũng ghi lại điều kiện để quay đầu: nếu site cần nhiều trang tương tác phức tạp, chẳng hạn demo sống của dự án chiếm phần lớn nội dung, thì Next.js đáng được cân nhắc lại. Hiện tại, site là chữ và code, và Astro vừa khít với việc đó.
+Tôi cũng ghi lại điều kiện để đảo ngược quyết định này: nếu site cần nhiều trang tương tác phức tạp, chẳng hạn demo sống của dự án chiếm phần lớn nội dung, thì Next.js đáng được cân nhắc lại. Hiện tại, site là chữ và code, và Astro vừa khít với việc đó.

@@ -193,7 +193,7 @@ Trang chủ không có nội dung riêng; mọi khối đều lấy từ collect
 
 ### Bối cảnh
 
-Người đọc chính của case study là nhà tuyển dụng và tech lead. Họ cần thấy quá trình suy luận: vấn đề là gì, đã cân nhắc những phương án nào, vì sao chọn, cái giá là gì, và bằng chứng nào cho thấy lựa chọn đó đúng. Một danh sách tính năng không cho thấy điều đó.
+Người đọc chính của case study là nhà tuyển dụng và tech lead. Họ cần thấy quá trình suy luận: vấn đề là gì, đã cân nhắc những phương án nào, vì sao chọn, đánh đổi những gì, và bằng chứng nào cho thấy lựa chọn đó đúng. Một danh sách tính năng không cho thấy điều đó.
 
 Trang `/projects/<slug>/` hiển thị cả hai phần trên cùng một trang: frontmatter thành các mục Vấn đề, Quyết định, Kết quả; thân bài nằm bên dưới (`src/layouts/Project.astro`). Bảng Vấn đề / Quyết định trên trang chủ cũng lấy từ frontmatter; Kết quả không đưa lên trang chủ vì làm thẻ dự án quá dài để lướt (28/09/2026).
 
@@ -215,7 +215,7 @@ Case study đầu tiên (`sojdev-site`, bản ngày 27/09/2026) cho thấy đi�
 | `decisions` | Các quyết định kiến trúc | 2–4 phần tử | Xem "Chọn quyết định nào" bên dưới |
 | `decisions[].title` | Tên quyết định | 15–70 | Nêu lựa chọn, không chỉ chủ đề: "Astro thay vì Next.js", không phải "Framework" |
 | `decisions[].label` | Nhãn trong mục lục | 8–28 | Rút gọn `title`, vẫn nêu lựa chọn: "Astro thay Next.js", "URL bất biến". 28 ký tự vừa một dòng ở cột mục lục 272 và ở 320 |
-| `decisions[].rationale` | Tóm tắt lập luận | 120–320 | Khoảng hai câu: chọn gì thay vì gì, vì sao; rồi cái giá chấp nhận |
+| `decisions[].rationale` | Tóm tắt lập luận | 120–320 | Khoảng hai câu: chọn gì thay vì gì, vì sao; rồi điều chấp nhận đánh đổi |
 | `outcome` | Kết quả | 150–350 | Đối chiếu từng tiêu chí của `problem`; nói rõ phần chưa đo |
 
 Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho lý do. Giới hạn trên giữ mỗi trường ở khoảng hai câu, để thẻ quyết định trong lưới 2 × 2 (RD-005) vẫn đọc được và frontmatter không thành bản thứ hai của thân bài.
@@ -229,7 +229,7 @@ Giới hạn dưới loại câu kiểu khẩu hiệu, không đủ chỗ cho l�
 **Thân bài, theo thứ tự:**
 
 1. `## Bối cảnh`: ràng buộc, rủi ro, và vì sao phải tự làm thay vì dùng giải pháp có sẵn.
-2. Mỗi quyết định một mục `## <title>`, **trùng tên và thứ tự** với `decisions[]`. Bên trong gồm bốn phần, mỗi phần mở đầu bằng chữ in đậm: **Phương án đã cân nhắc.**, **Vì sao chọn.**, **Bằng chứng.**, **Cái giá.** (kèm điều kiện đảo ngược nếu có). Chúng không phải heading: thân case study chỉ có heading `##`, và `###` trở xuống làm build thất bại (28/09/2026). Bản thử dùng `###` (render thành `<h4>`) cùng ngày cho thấy dưới mỗi mục có hai cấp chữ gần nhau, và bốn heading lặp y hệt ở mọi quyết định; chữ in đậm cùng cỡ với thân bài giữ mỗi mục một cấp.
+2. Mỗi quyết định một mục `## <title>`, **trùng tên và thứ tự** với `decisions[]`. Bên trong gồm bốn phần, mỗi phần mở đầu bằng chữ in đậm: **Phương án đã cân nhắc.**, **Vì sao chọn.**, **Bằng chứng.**, **Đánh đổi.** (kèm điều kiện đảo ngược nếu có). Chúng không phải heading: thân case study chỉ có heading `##`, và `###` trở xuống làm build thất bại (28/09/2026). Bản thử dùng `###` (render thành `<h4>`) cùng ngày cho thấy dưới mỗi mục có hai cấp chữ gần nhau, và bốn heading lặp y hệt ở mọi quyết định; chữ in đậm cùng cỡ với thân bài giữ mỗi mục một cấp. Phần cuối trước gọi là **Cái giá.**; đổi thành **Đánh đổi.** (29/09/2026) vì đó là thuật ngữ quen của phân tích quyết định (trade-off).
 3. `## Đối chiếu kết quả`: bảng tiêu chí → kết quả → bằng chứng.
 4. `## Còn mở` (tuỳ chọn): những gì chưa đo hoặc chưa kiểm chứng, kèm kế hoạch.
 5. `## Điều tôi sẽ làm khác` (tuỳ chọn).
