@@ -1,7 +1,7 @@
 ---
 import PostYearList from "../../components/PostYearList.astro";
 import StatIntro from "../../components/StatIntro.astro";
-import TableOfContents, { type TocPart } from "../../components/TableOfContents.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 import TopicNav from "../../components/TopicNav.astro";
 import Base from "../../layouts/Base.astro";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../../lib/content";
 import { formatDate } from "../../lib/format";
 import { SITE } from "../../lib/site";
+import type { TocPart } from "../../lib/toc";
 
 // IA-005: mọi bài trên một trang, nhóm theo năm, không phân trang, không lọc JS.
 const [posts, topics] = await Promise.all([getPublishedPosts(), getFeaturedTopics()]);

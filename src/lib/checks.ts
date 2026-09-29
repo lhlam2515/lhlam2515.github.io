@@ -1,4 +1,6 @@
+import type { MarkdownHeading } from "astro";
 import type { CollectionEntry } from "astro:content";
+import { bodySections, FIXED_SECTIONS } from "./case-study";
 import type { Post, Project, Tag } from "./content";
 import { SLUG_PATTERN } from "./slug";
 
@@ -35,9 +37,6 @@ export function assertReferences(posts: Post[], tags: Tag[], projects: Project[]
   if (errors.length > 0) throw new Error(`Tham chiếu nội dung hỏng:\n${errors.join("\n")}`);
 }
 
-/** Các mục `##` của thân case study không ứng với quyết định nào (IA-007). */
-const FIXED_SECTIONS = new Set(["Bối cảnh", "Đối chiếu kết quả", "Còn mở", "Điều tôi sẽ làm khác"]);
-
 /**
  * IA-007: mỗi quyết định trong frontmatter có một mục `##` cùng tên, cùng thứ
  * tự trong thân bài. Không kiểm thì hai bản lệch nhau mà build vẫn qua, như
@@ -46,8 +45,8 @@ const FIXED_SECTIONS = new Set(["Bối cảnh", "Đối chiếu kết quả", "C
 export function assertDecisionSections(projects: Project[]): void {
   const errors: string[] = [];
   for (const project of projects) {
-    const headings = [...(project.body ?? "").matchAll(/^## +(.+?)\s*$/gm)]
-      .map((m) => m[1])
+    const headings = bodySections(project)
+      .map((s) => s.heading)
       .filter((h) => !FIXED_SECTIONS.has(h));
     const titles = project.data.decisions.map((d) => d.title);
     // Bốn phần của quyết định là chữ in đậm, không phải heading: dưới mỗi mục
@@ -67,6 +66,22 @@ export function assertDecisionSections(projects: Project[]): void {
     }
   }
   if (errors.length > 0) throw new Error(`Case study lệch cấu trúc:\n${errors.join("\n")}`);
+}
+
+/**
+ * IA-007: thân case study phải đã hạ cấp lúc render, mục `##` thành h3. Còn h2
+ * nghĩa là plugin caseStudyHeadings không chạy, và khi đó `depth === 3` lại
+ * bắt nhầm bốn phần của quyết định; trang cũng có h2 nằm trong h2 "Chi tiết".
+ * Dừng thay vì dựng mục lục sai.
+ */
+export function assertCaseStudyHeadings(project: Project, headings: MarkdownHeading[]): void {
+  const bodyTop = Math.min(...headings.map((h) => h.depth));
+  if (headings.length > 0 && bodyTop !== 3) {
+    throw new Error(
+      `${project.filePath}: heading thân bài bắt đầu ở h${bodyTop}, cần h3 (IA-007). ` +
+        "Plugin caseStudyHeadings trong astro.config.mjs không chạy; nếu vừa đổi astro.config.mjs, khởi động lại dev server.",
+    );
+  }
 }
 
 /** IA-008: trang chủ chỉ đọc frontmatter; chữ ở thân bài sẽ mất mà không ai biết. */

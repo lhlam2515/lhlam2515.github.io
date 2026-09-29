@@ -2,7 +2,9 @@
 import type { MarkdownHeading } from "astro";
 import ImageSlot from "../components/ImageSlot.astro";
 import PostItem from "../components/PostItem.astro";
-import TableOfContents, { type TocItem, type TocPart } from "../components/TableOfContents.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import { caseStudyToc, decisionNumber, evidenceIds, hostLabel, repoLabel } from "../lib/case-study";
+import { assertCaseStudyHeadings } from "../lib/checks";
 import type { Project } from "../lib/content";
 import { getPostsForProject } from "../lib/content";
 import { SITE } from "../lib/site";
@@ -23,49 +25,11 @@ interface Props {
 const { project, headings } = Astro.props;
 const { data } = project;
 const posts = await getPostsForProject(project.id);
-const host = (url: string) => new URL(url).host + new URL(url).pathname.replace(/\/$/, "");
-// Repo trên GitHub hiện dạng `owner/repo` như cách dev gọi tên repo; host khác
-// giữ nguyên host để người đọc biết mã nằm ở đâu.
-const repoName = (url: string) => (new URL(url).host === "github.com" ? host(url).replace(/^github\.com\//, "") : host(url));
-
-// Thân bài phải đã hạ cấp: mục `##` thành h3. Còn h2 nghĩa là plugin
-// caseStudyHeadings không chạy, và khi đó `depth === 3` lại bắt nhầm bốn phần
-// của quyết định; trang cũng có h2 nằm trong h2 "Chi tiết". Dừng thay vì dựng
-// mục lục sai.
-const bodyTop = Math.min(...headings.map((h) => h.depth));
-if (headings.length > 0 && bodyTop !== 3) {
-  throw new Error(
-    `${project.filePath}: heading thân bài bắt đầu ở h${bodyTop}, cần h3 (IA-007). ` +
-      "Plugin caseStudyHeadings trong astro.config.mjs không chạy; nếu vừa đổi astro.config.mjs, khởi động lại dev server.",
-  );
-}
-
-// IA-007: mục lục gồm các mục h3 của thân bài. Mỗi quyết định có một mục cùng
-// tên, nên thẻ quyết định và mục lục link thẳng xuống bằng chứng.
-const sections = headings.filter((h) => h.depth === 3);
-const evidenceId = new Map(sections.map((h) => [h.text, h.slug]));
-const decisionIndex = new Map(data.decisions.map((d, i) => [d.title, i]));
-const num = (i: number) => String(i + 1).padStart(2, "0");
-
-// Mục lục theo cây heading của trang. Quyết định hiện bằng `label` ngắn để mọi
-// mục một dòng, nhịp đều nhau; tên đầy đủ vẫn là heading ở đích.
-const detailItems: TocItem[] = sections.map((h) => {
-  const i = decisionIndex.get(h.text);
-  return i === undefined ? { id: h.slug, text: h.text } : { id: h.slug, text: data.decisions[i].label, num: num(i) };
-});
-const toc: TocPart[] = [
-  {
-    id: "summary",
-    text: "Tóm tắt",
-    items: [
-      { id: "problem", text: "Vấn đề" },
-      { id: "decisions", text: "Quyết định" },
-      { id: "outcome", text: "Kết quả" },
-    ],
-  },
-  { id: "details", text: "Chi tiết", items: detailItems },
-  ...(posts.length > 0 ? [{ id: "rel", text: "Bài viết về dự án này", items: [] }] : []),
-];
+assertCaseStudyHeadings(project, headings);
+// Mỗi quyết định có một mục cùng tên trong thân bài, nên thẻ quyết định và
+// mục lục link thẳng xuống bằng chứng.
+const evidenceId = evidenceIds(headings);
+const toc = caseStudyToc(project, headings, posts.length > 0);
 ---
 
 <Base title={`${data.title} · Dự án · ${SITE.name}`} description={data.summary}>
@@ -92,7 +56,7 @@ const toc: TocPart[] = [
           data.repoUrl && (
             <div>
               <dt>Mã nguồn</dt>
-              <dd><a href={data.repoUrl}>{repoName(data.repoUrl)}</a></dd>
+              <dd><a href={data.repoUrl}>{repoLabel(data.repoUrl)}</a></dd>
             </div>
           )
         }
@@ -100,7 +64,7 @@ const toc: TocPart[] = [
           data.liveUrl && (
             <div>
               <dt>Bản chạy</dt>
-              <dd><a href={data.liveUrl}>{host(data.liveUrl)}</a></dd>
+              <dd><a href={data.liveUrl}>{hostLabel(data.liveUrl)}</a></dd>
             </div>
           )
         }
@@ -140,7 +104,7 @@ const toc: TocPart[] = [
                   const id = evidenceId.get(decision.title);
                   return (
                     <li>
-                      <span class="num" aria-hidden="true">{num(i)}</span>
+                      <span class="num" aria-hidden="true">{decisionNumber(i)}</span>
                       <p class="decision-title">
                         {id ? <a class="evidence-link" href={`#${id}`}>{decision.title}</a> : decision.title}
                       </p>

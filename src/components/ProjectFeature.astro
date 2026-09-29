@@ -1,5 +1,6 @@
 ---
 import type { Project } from "../lib/content";
+import { decisionNumber } from "../lib/case-study";
 import { projectUrl } from "../lib/urls";
 import ImageSlot from "./ImageSlot.astro";
 
@@ -23,7 +24,6 @@ interface Props {
 const { project, summary, reverse = false, headingLevel: Heading = "h3" } = Astro.props;
 const { data } = project;
 const url = projectUrl(project);
-const num = (i: number) => String(i + 1).padStart(2, "0");
 ---
 
 <article class:list={["feature", { reverse }]}>
@@ -62,7 +62,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
                 {data.decisions.map((d, i) => (
                   <li>
                     <span class="num" aria-hidden="true">
-                      {num(i)}
+                      {decisionNumber(i)}
                     </span>
                     {d.label}
                   </li>
@@ -81,7 +81,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
             {data.decisions.map((d, i) => (
               <li>
                 <span class="num" aria-hidden="true">
-                  {num(i)}
+                  {decisionNumber(i)}
                 </span>
                 {d.label}
               </li>

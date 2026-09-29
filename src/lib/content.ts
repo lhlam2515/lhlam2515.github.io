@@ -1,4 +1,5 @@
 import { getCollection, getEntry, type CollectionEntry } from "astro:content";
+import { countWeighedDecisions } from "./case-study";
 import { assertAboutBody, assertDecisionSections, assertHomeBody, assertReferences } from "./checks";
 
 export type Post = CollectionEntry<"blog">;
@@ -176,25 +177,6 @@ export async function getProjectsOverview(projects: Project[]): Promise<Projects
     posts,
     stack,
   };
-}
-
-/**
- * IA-007: mỗi quyết định có bốn phần in đậm, nhưng build chỉ ép tên mục `##`,
- * không ép đủ bốn phần. Đếm quyết định có cả phần so sánh (**Phương án đã
- * cân nhắc.**) và phần đánh đổi (**Đánh đổi.**) để số trên /projects/ nói
- * thật: quyết định thiếu một trong hai thì tỉ lệ tụt, không bị che.
- */
-function countWeighedDecisions(project: Project): number {
-  const sections = new Map(
-    (project.body ?? "").split(/^## +/m).slice(1).map((s) => {
-      const [heading, ...rest] = s.split("\n");
-      return [heading.trim(), rest.join("\n")] as const;
-    }),
-  );
-  return project.data.decisions.filter(({ title }) => {
-    const section = sections.get(title) ?? "";
-    return /^\*\*Phương án đã cân nhắc\.\*\*/m.test(section) && /^\*\*Đánh đổi\.\*\*/m.test(section);
-  }).length;
 }
 
 export type BlogOverview = {

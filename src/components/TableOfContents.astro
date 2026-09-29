@@ -1,18 +1,11 @@
 ---
+import type { TocPart } from "../lib/toc";
+
 /**
  * Mục lục trong trang (RD-004): cột phải cố định trong màn hình từ 1024; dưới
  * 1024 là nút nổi mở bảng mục lục. Trang dùng component tự đặt nó vào cột phải
  * của lưới ở 1024, vì lưới thuộc về trang.
  */
-/**
- * `count`: số bài của mục, hiện bên phải (mục lục năm/tháng của /blog/).
- * `open`: có thì phần thành `<details>` thu gọn được, mở sẵn khi `true`; tên
- * phần khi đó là nút mở/đóng thay vì link, vì link lồng trong nút không bấm
- * riêng được.
- */
-export type TocItem = { id: string; text: string; num?: string; count?: number };
-export type TocPart = { id: string; text: string; items: TocItem[]; count?: number; open?: boolean };
-
 interface Props {
   parts: TocPart[];
   /** Tên trang, mục đầu mục lục, trỏ về đầu trang. */
