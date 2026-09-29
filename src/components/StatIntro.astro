@@ -1,11 +1,13 @@
 ---
+import type { Stat } from "../lib/overview";
+
 /**
  * Đầu trang danh sách có số liệu tính lúc build thay cho câu dẫn (IA-005):
  * slot `title` là tiêu đề, slot mặc định là nhóm chip, `stats` là các StatCard.
  * Dùng cho /projects/ và /blog/. Thẻ có số 0 bị bỏ: số liệu chỉ hiện khi có thật.
  */
 interface Props {
-  stats: { label: string; lead: string; value: number }[];
+  stats: Stat[];
 }
 
 const stats = Astro.props.stats.filter((s) => s.value > 0);

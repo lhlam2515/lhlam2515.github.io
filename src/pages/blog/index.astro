@@ -4,67 +4,24 @@ import StatIntro from "../../components/StatIntro.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
 import TopicNav from "../../components/TopicNav.astro";
 import Base from "../../layouts/Base.astro";
-import {
-  archiveId,
-  getBlogOverview,
-  getFeaturedTopics,
-  getPublishedPosts,
-  groupByMonth,
-  groupByYear,
-} from "../../lib/content";
-import { formatDate } from "../../lib/format";
+import { archiveToc } from "../../lib/archive";
+import { getFeaturedTopics, getPublishedPosts } from "../../lib/content";
+import { getBlogOverview } from "../../lib/overview";
 import { SITE } from "../../lib/site";
-import type { TocPart } from "../../lib/toc";
 
 // IA-005: mọi bài trên một trang, nhóm theo năm, không phân trang, không lọc JS.
 const [posts, topics] = await Promise.all([getPublishedPosts(), getFeaturedTopics()]);
 const overview = await getBlogOverview(posts);
 // Không hiện trên trang, chỉ làm meta description: đầu trang là số liệu, như /projects/.
 const description = "Bài viết kỹ thuật về kiến trúc web, kỹ thuật yêu cầu, kiểm thử và AI agent.";
-
-// Dòng dẫn là một sự thật tính từ nội dung, không phải khẩu hiệu: người đọc
-// biết blog còn viết không, viết về gì, và bài nào có dự án để đối chiếu.
-const latest = posts[0];
-const topLabels = new Intl.ListFormat(SITE.locale, { type: "conjunction" }).format(
-  overview.topTags.map((tag) => tag.data.label.vi),
-);
-const stats = [
-  {
-    label: "Bài viết",
-    lead: latest ? `Mới nhất ngày ${formatDate(latest.data.pubDate)}` : "",
-    value: posts.length,
-  },
-  {
-    label: "Chủ đề",
-    lead: `Viết nhiều nhất về ${topLabels}`,
-    value: overview.tagCounts.size,
-  },
-  {
-    label: "Từ dự án",
-    lead: "Có case study đi kèm để đối chiếu",
-    value: overview.projectPosts.length,
-  },
-];
-
 // Mục lục năm → tháng kèm số bài: cột phải dính theo khi cuộn ở laptop, nút
-// nổi dưới 1024 (TableOfContents, RD-004). Id khớp PostYearList qua archiveId().
-// Chỉ năm mới nhất mở sẵn, để mục lục không dài theo số tháng đã viết.
-const toc: TocPart[] = groupByYear(posts).map(({ year, posts }, i) => ({
-  id: archiveId(year),
-  text: String(year),
-  count: posts.length,
-  open: i === 0,
-  items: groupByMonth(posts).map(({ month, posts }) => ({
-    id: archiveId(year, month),
-    text: `Tháng ${month}`,
-    count: posts.length,
-  })),
-}));
+// nổi dưới 1024 (TableOfContents, RD-004).
+const toc = archiveToc(posts);
 ---
 
 <Base title={`Blog · ${SITE.name}`} description={description}>
   <div class="container page blog">
-    <StatIntro stats={stats}>
+    <StatIntro stats={overview.stats}>
       <h1 slot="title">Blog</h1>
       <div class="topics">
         <p class="topics-label" aria-hidden="true">Chủ đề nổi bật</p>

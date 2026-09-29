@@ -1,6 +1,6 @@
 ---
+import { archiveId, groupByMonth, groupByYear, openMonthIds } from "../lib/archive";
 import type { Post } from "../lib/content";
-import { archiveId, groupByMonth, groupByYear } from "../lib/content";
 import PostItem from "./PostItem.astro";
 
 /**
@@ -23,16 +23,7 @@ interface Props {
 
 const { posts, byMonth = false, openLimit = Infinity } = Astro.props;
 const groups = groupByYear(posts).map(({ year, posts }) => ({ year, posts, months: groupByMonth(posts) }));
-
-// Tháng từ mới đến cũ, qua cả ranh giới năm. Dừng ở tháng đầu tiên làm vượt
-// giới hạn, để phần mở luôn là một khối liền từ bài mới nhất.
-const openMonths = new Set<string>();
-let shown = 0;
-for (const { year, month, posts } of groups.flatMap(({ year, months }) => months.map((m) => ({ year, ...m })))) {
-  if (shown > 0 && shown + posts.length > openLimit) break;
-  openMonths.add(archiveId(year, month));
-  shown += posts.length;
-}
+const openMonths = openMonthIds(posts, openLimit);
 ---
 
 <div class="years">

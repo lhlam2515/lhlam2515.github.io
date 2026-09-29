@@ -1,5 +1,4 @@
 import { getCollection, getEntry, type CollectionEntry } from "astro:content";
-import { countWeighedDecisions } from "./case-study";
 import { assertAboutBody, assertDecisionSections, assertHomeBody, assertReferences } from "./checks";
 
 export type Post = CollectionEntry<"blog">;
@@ -92,31 +91,6 @@ export async function getAboutPage(locale = "vi"): Promise<CollectionEntry<"abou
   return page;
 }
 
-/** Nhóm theo năm đăng, năm mới nhất trước; giữ thứ tự bài bên trong. */
-export function groupByYear(posts: Post[]): { year: number; posts: Post[] }[] {
-  const groups = new Map<number, Post[]>();
-  for (const post of posts) {
-    const year = post.data.pubDate.getUTCFullYear();
-    groups.set(year, [...(groups.get(year) ?? []), post]);
-  }
-  return [...groups].sort(([a], [b]) => b - a).map(([year, posts]) => ({ year, posts }));
-}
-
-/** Id anchor của nhóm năm/tháng trong danh sách bài; mục lục của /blog/ trỏ tới đây. */
-export function archiveId(year: number, month?: number): string {
-  return month ? `y${year}-m${String(month).padStart(2, "0")}` : `y${year}`;
-}
-
-/** Nhóm theo tháng đăng (1–12, UTC như `formatDate()`); bài đã xếp mới nhất trước thì tháng cũng vậy. */
-export function groupByMonth(posts: Post[]): { month: number; posts: Post[] }[] {
-  const groups = new Map<number, Post[]>();
-  for (const post of posts) {
-    const month = post.data.pubDate.getUTCMonth() + 1;
-    groups.set(month, [...(groups.get(month) ?? []), post]);
-  }
-  return [...groups].map(([month, posts]) => ({ month, posts }));
-}
-
 /**
  * IA-003: tối đa 3 bài, xếp theo số tag trùng rồi theo ngày mới hơn. Không
  * bài nào trùng tag thì trả về rỗng, không lấp bằng bài ngẫu nhiên.
@@ -136,70 +110,6 @@ export async function getPostsForProject(projectId: string): Promise<Post[]> {
   return (await getPublishedPosts()).filter((post) =>
     post.data.relatedProjects?.some(({ id }) => id === projectId),
   );
-}
-
-export type ProjectsOverview = {
-  decisionCount: number;
-  /** Quyết định có cả **Phương án đã cân nhắc.** và **Đánh đổi.** trong mục `##` của nó (IA-007). */
-  weighedCount: number;
-  /** Dự án có `repoUrl` / `liveUrl`: người đọc tự kiểm được. */
-  withRepo: number;
-  withLive: number;
-  /** Bài có `relatedProjects` trỏ tới các dự án này, mới nhất trước. */
-  posts: Post[];
-  /** Mọi mục stack, dùng ở nhiều dự án trước, cùng số thì theo thứ tự xuất hiện. */
-  stack: { name: string; count: number }[];
-};
-
-/**
- * Số liệu đầu trang /projects/, tính lúc build từ collection nên không lệch
- * với danh sách bên dưới (IA-005). Tag không có ở đây: tag thuộc bài viết
- * (IA-002), trang dự án chỉ đếm bài qua `relatedProjects` (IA-003).
- */
-export async function getProjectsOverview(projects: Project[]): Promise<ProjectsOverview> {
-  const ids = new Set(projects.map((p) => p.id));
-  const posts = (await getPublishedPosts()).filter((post) =>
-    post.data.relatedProjects?.some(({ id }) => ids.has(id)),
-  );
-
-  const stackCounts = new Map<string, number>();
-  for (const p of projects) {
-    for (const name of p.data.stack) stackCounts.set(name, (stackCounts.get(name) ?? 0) + 1);
-  }
-  // Map giữ thứ tự chèn và sort của JS ổn định, nên cùng số thì giữ thứ tự xuất hiện.
-  const stack = [...stackCounts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-
-  return {
-    decisionCount: projects.reduce((sum, p) => sum + p.data.decisions.length, 0),
-    weighedCount: projects.reduce((sum, p) => sum + countWeighedDecisions(p), 0),
-    withRepo: projects.filter((p) => p.data.repoUrl).length,
-    withLive: projects.filter((p) => p.data.liveUrl).length,
-    posts,
-    stack,
-  };
-}
-
-export type BlogOverview = {
-  /** Số bài đã đăng của từng tag, để nút lọc chủ đề kèm số bài. */
-  tagCounts: Map<string, number>;
-  /** Tag có nhiều bài nhất; đồng hạng thì lấy hết. */
-  topTags: Tag[];
-  /** Bài có `relatedProjects`: viết từ dự án có case study để đối chiếu (IA-003). */
-  projectPosts: Post[];
-};
-
-/**
- * Số liệu đầu trang /blog/, tính từ chính danh sách bài đã lọc draft nên
- * không lệch với danh sách bên dưới (IA-005).
- */
-export async function getBlogOverview(posts: Post[]): Promise<BlogOverview> {
-  const withCounts = await getTagsWithCounts();
-  const tagCounts = new Map(withCounts.map(({ tag, count }) => [tag.id, count]));
-  // getTagsWithCounts() đã xếp nhiều bài trước, nên phần tử đầu là mức cao nhất.
-  const max = withCounts[0]?.count ?? 0;
-  const topTags = withCounts.filter(({ count }) => count === max).map(({ tag }) => tag);
-  const projectPosts = posts.filter((post) => (post.data.relatedProjects?.length ?? 0) > 0);
-  return { tagCounts, topTags, projectPosts };
 }
 
 /** Dự án theo thứ tự `ids`, qua getProjects() để cũng chịu kiểm tra của IA-007. */
