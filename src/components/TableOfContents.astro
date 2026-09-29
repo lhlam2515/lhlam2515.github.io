@@ -4,16 +4,24 @@
  * 1024 là nút nổi mở bảng mục lục. Trang dùng component tự đặt nó vào cột phải
  * của lưới ở 1024, vì lưới thuộc về trang.
  */
-export type TocItem = { id: string; text: string; num?: string };
-export type TocPart = { id: string; text: string; items: TocItem[] };
+/**
+ * `count`: số bài của mục, hiện bên phải (mục lục năm/tháng của /blog/).
+ * `open`: có thì phần thành `<details>` thu gọn được, mở sẵn khi `true`; tên
+ * phần khi đó là nút mở/đóng thay vì link, vì link lồng trong nút không bấm
+ * riêng được.
+ */
+export type TocItem = { id: string; text: string; num?: string; count?: number };
+export type TocPart = { id: string; text: string; items: TocItem[]; count?: number; open?: boolean };
 
 interface Props {
   parts: TocPart[];
   /** Tên trang, mục đầu mục lục, trỏ về đầu trang. */
   title?: string;
+  /** Nhãn nhìn thấy ở đầu mục lục. */
+  label?: string;
 }
 
-const { parts, title } = Astro.props;
+const { parts, title, label = "Trên trang này" } = Astro.props;
 ---
 
 <!--
@@ -26,30 +34,60 @@ const { parts, title } = Astro.props;
   <a class="toc-backdrop" href="#dong-muc-luc" tabindex="-1" aria-hidden="true"></a>
   <div class="toc-panel">
     <div class="toc-head">
-      <p class="toc-label">Trên trang này</p>
+      <p class="toc-label">{label}</p>
       <a class="toc-close" href="#dong-muc-luc">Đóng</a>
     </div>
     {/* `#top` không cần phần tử đích: trình duyệt cuộn về đầu tài liệu (chuẩn HTML). */}
     {title && <a class="toc-title" href="#top">{title}</a>}
     <ol class="toc-parts">
       {
-        parts.map((part) => (
-          <li>
-            <a class="toc-part" href={`#${part.id}`}>{part.text}</a>
-            {part.items.length > 0 && (
-              <ol class="toc-items">
-                {part.items.map((item) => (
-                  <li>
-                    <a href={`#${item.id}`}>
-                      {item.num && <span class="toc-num" aria-hidden="true">{item.num}</span>}
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </li>
-        ))
+        parts.map((part) => {
+          const count = part.count && (
+            <span class="toc-count">
+              <span aria-hidden="true">{part.count}</span>
+              <span class="visually-hidden">, {part.count} bài</span>
+            </span>
+          );
+          const items = part.items.length > 0 && (
+            <ol class="toc-items">
+              {part.items.map((item) => (
+                <li>
+                  <a href={`#${item.id}`}>
+                    {item.num && <span class="toc-num" aria-hidden="true">{item.num}</span>}
+                    {item.text}
+                    {item.count && (
+                      <span class="toc-count">
+                        <span aria-hidden="true">{item.count}</span>
+                        <span class="visually-hidden">, {item.count} bài</span>
+                      </span>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          );
+          return (
+            <li>
+              {part.open === undefined ? (
+                <>
+                  <a class="toc-part" href={`#${part.id}`}>
+                    {part.text}
+                    {count}
+                  </a>
+                  {items}
+                </>
+              ) : (
+                <details class="toc-group" open={part.open}>
+                  <summary class="toc-part">
+                    {part.text}
+                    {count}
+                  </summary>
+                  {items}
+                </details>
+              )}
+            </li>
+          );
+        })
       }
     </ol>
   </div>
@@ -169,6 +207,43 @@ const { parts, title } = Astro.props;
     color: var(--fg-strong);
   }
 
+  /* Phần thu gọn được: tên phần là nút, cùng nhịp 44 với các link. */
+  summary.toc-part {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--touch-target);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary.toc-part::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Mũi tên bằng CSS: xoay xuống khi mở, không cần JS. */
+  summary.toc-part::before {
+    content: "▸";
+    color: var(--fg-subtle);
+    transition: rotate 0.15s;
+  }
+
+  .toc-group[open] > summary::before {
+    rotate: 90deg;
+  }
+
+  summary.toc-part:hover {
+    color: var(--link);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    summary.toc-part::before {
+      transition: none;
+    }
+  }
+
   /* Tên trang đứng trên cây mục, tách bằng vạch như tên phần tách khỏi mục con. */
   .toc .toc-title {
     padding-block: var(--space-xs);
@@ -198,6 +273,15 @@ const { parts, title } = Astro.props;
 
   .toc-items a:hover {
     border-left-color: var(--link);
+  }
+
+  /* Số bài đẩy sang mép phải, để các số thẳng một cột như bảng. */
+  .toc-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    font-weight: 400;
+    color: var(--fg-subtle);
   }
 
   .toc-num {

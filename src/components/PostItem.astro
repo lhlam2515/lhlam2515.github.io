@@ -10,15 +10,17 @@ import { formatDate, isoDate } from "../lib/format";
 interface Props {
   post: Post;
   datePosition?: "before" | "after";
+  /** h4 khi bài nằm dưới tiêu đề tháng (h3) của /blog/; cỡ chữ không đổi. */
+  headingLevel?: "h3" | "h4";
 }
 
-const { post, datePosition = "after" } = Astro.props;
+const { post, datePosition = "after", headingLevel: Heading = "h3" } = Astro.props;
 const { pubDate } = post.data;
 ---
 
 <article class="post-item">
   {datePosition === "before" && <time class="meta" datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>}
-  <h3><a class="title-link" href={postUrl(post)}>{post.data.title}</a></h3>
+  <Heading class="title"><a class="title-link" href={postUrl(post)}>{post.data.title}</a></Heading>
   {datePosition === "after" && <time class="meta" datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>}
   <p>{post.data.description}</p>
 </article>
@@ -30,7 +32,7 @@ const { pubDate } = post.data;
     gap: var(--space-sm);
   }
 
-  h3 {
+  .title {
     font-size: var(--fs-post-title);
   }
 

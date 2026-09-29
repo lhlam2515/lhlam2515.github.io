@@ -1,9 +1,17 @@
 ---
 import PostYearList from "../../components/PostYearList.astro";
 import StatIntro from "../../components/StatIntro.astro";
+import TableOfContents, { type TocPart } from "../../components/TableOfContents.astro";
 import TopicNav from "../../components/TopicNav.astro";
 import Base from "../../layouts/Base.astro";
-import { getBlogOverview, getFeaturedTopics, getPublishedPosts } from "../../lib/content";
+import {
+  archiveId,
+  getBlogOverview,
+  getFeaturedTopics,
+  getPublishedPosts,
+  groupByMonth,
+  groupByYear,
+} from "../../lib/content";
 import { formatDate } from "../../lib/format";
 import { SITE } from "../../lib/site";
 
@@ -37,6 +45,20 @@ const stats = [
   },
 ];
 
+// Mục lục năm → tháng kèm số bài: cột phải dính theo khi cuộn ở laptop, nút
+// nổi dưới 1024 (TableOfContents, RD-004). Id khớp PostYearList qua archiveId().
+// Chỉ năm mới nhất mở sẵn, để mục lục không dài theo số tháng đã viết.
+const toc: TocPart[] = groupByYear(posts).map(({ year, posts }, i) => ({
+  id: archiveId(year),
+  text: String(year),
+  count: posts.length,
+  open: i === 0,
+  items: groupByMonth(posts).map(({ month, posts }) => ({
+    id: archiveId(year, month),
+    text: `Tháng ${month}`,
+    count: posts.length,
+  })),
+}));
 ---
 
 <Base title={`Blog · ${SITE.name}`} description={description}>
@@ -50,7 +72,10 @@ const stats = [
         </TopicNav>
       </div>
     </StatIntro>
-    <PostYearList posts={posts} />
+    <div class="blog-body">
+      <TableOfContents parts={toc} label="Theo thời gian" />
+      <PostYearList posts={posts} byMonth openLimit={10} />
+    </div>
   </div>
 </Base>
 
@@ -76,4 +101,30 @@ const stats = [
     padding: 0 var(--space-sm);
   }
 
+  /* Laptop: mục lục là cột phải 17rem như case study (Project.astro). */
+  @media (min-width: 1024px) {
+    .blog-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 17rem;
+      column-gap: var(--space-3xl);
+      align-items: start;
+    }
+
+    .blog-body > :global(.years) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .blog-body > :global(.toc) {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    /* Mục lục đã có năm, nên cột năm giữ 120 như tablet để cột bài không
+       hẹp dưới 480 ở 1024. */
+    .blog-body :global(.year) {
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
 </style>

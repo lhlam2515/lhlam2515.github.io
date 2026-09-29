@@ -1,31 +1,89 @@
 ---
 import type { Post } from "../lib/content";
-import { groupByYear } from "../lib/content";
+import { archiveId, groupByMonth, groupByYear } from "../lib/content";
 import PostItem from "./PostItem.astro";
 
 /**
  * Bài nhóm theo năm, mới nhất trước (IA-005). Dùng cho /blog/ và /tags/<tag>/.
  * Cột năm 200 trên laptop, 120 trên tablet; mobile: năm thành tiêu đề phía
  * trên nhóm bài (RD-005).
+ *
+ * Duyệt nhiều bài mà không cần JS hay phân trang (IA-005):
+ * - `byMonth`: trong mỗi năm, nhóm tiếp theo tháng (h3), để mục lục năm/tháng
+ *   của trang có chỗ trỏ tới.
+ * - `openLimit` (cần `byMonth`): tháng mới nhất luôn mở; các tháng sau mở
+ *   tiếp chừng nào tổng số bài đang mở chưa vượt `openLimit`. Từ tháng làm
+ *   vượt trở đi, mỗi tháng nằm trong `<details>` đóng, chỉ thấy số bài.
  */
 interface Props {
   posts: Post[];
+  byMonth?: boolean;
+  openLimit?: number;
 }
 
-const { posts } = Astro.props;
-const groups = groupByYear(posts);
+const { posts, byMonth = false, openLimit = Infinity } = Astro.props;
+const groups = groupByYear(posts).map(({ year, posts }) => ({ year, posts, months: groupByMonth(posts) }));
+
+// Tháng từ mới đến cũ, qua cả ranh giới năm. Dừng ở tháng đầu tiên làm vượt
+// giới hạn, để phần mở luôn là một khối liền từ bài mới nhất.
+const openMonths = new Set<string>();
+let shown = 0;
+for (const { year, month, posts } of groups.flatMap(({ year, months }) => months.map((m) => ({ year, ...m })))) {
+  if (shown > 0 && shown + posts.length > openLimit) break;
+  openMonths.add(archiveId(year, month));
+  shown += posts.length;
+}
 ---
 
 <div class="years">
   {
-    groups.map(({ year, posts }) => (
-      <section class="year" aria-labelledby={`y${year}`}>
-        <h2 id={`y${year}`}>{year}</h2>
-        <div class="posts">
-          {posts.map((post) => (
-            <PostItem post={post} />
-          ))}
-        </div>
+    groups.map(({ year, posts, months }) => (
+      <section class="year" aria-labelledby={archiveId(year)}>
+        <h2 id={archiveId(year)}>{year}</h2>
+        {byMonth ? (
+          <div class="months">
+            {months.map(({ month, posts }) => {
+              const id = archiveId(year, month);
+              const list = (
+                <div class="posts">
+                  {posts.map((post) => (
+                    <PostItem post={post} headingLevel="h4" />
+                  ))}
+                </div>
+              );
+              return (
+                <section class:list={["month", { closed: !openMonths.has(id) }]} aria-labelledby={id}>
+                  {openMonths.has(id) ? (
+                    <>
+                      <h3 id={id} class="month-title">
+                        Tháng {month}
+                      </h3>
+                      {list}
+                    </>
+                  ) : (
+                    <details>
+                      {/* Nhãn tháng và số bài là một nút: hàng giữ nguyên chỗ khi mở,
+                          chỉ mũi tên xoay. Heading nằm trong summary là HTML hợp lệ. */}
+                      <summary>
+                        <h3 id={id} class="month-title">
+                          Tháng {month}
+                        </h3>
+                        <span class="month-count">{posts.length} bài</span>
+                      </summary>
+                      {list}
+                    </details>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        ) : (
+          <div class="posts">
+            {posts.map((post) => (
+              <PostItem post={post} />
+            ))}
+          </div>
+        )}
       </section>
     ))
   }
@@ -51,11 +109,92 @@ const groups = groupByYear(posts);
     gap: var(--space-xl);
   }
 
+  .months {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .month + .month {
+    padding-top: var(--space-2xl);
+  }
+
+  /* Sau một tháng đang đóng, tháng đóng kế tiếp xếp sát: các dòng nút cao 44
+     đọc như một danh sách. Sau tháng đã mở thì giữ khoảng cách nhóm. */
+  .month.closed:has(> details:not([open])) + .month.closed {
+    padding-top: var(--space-xs);
+  }
+
+  .month {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  /* Tháng là mốc để dò, không phải tiêu đề đọc: nhỏ và nhạt hơn tiêu đề bài. */
+  .month-title {
+    font-family: var(--font-body);
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+  }
+
+  /* Mũi tên ở cuối hàng, để nhãn tháng đóng thẳng lề trái với tháng luôn mở. */
+  summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--touch-target);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .month-count {
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    color: var(--link);
+  }
+
+  /* Mũi tên bằng CSS: xoay xuống khi mở, không cần JS. */
+  summary::after {
+    content: "▸";
+    font-size: var(--fs-caption);
+    color: var(--link);
+    transition: rotate 0.15s;
+  }
+
+  details[open] > summary::after {
+    rotate: 90deg;
+  }
+
+  summary:hover .month-title {
+    color: var(--link);
+  }
+
+  /* Summary cao 44 đã có khoảng thở; tháng luôn mở dùng gap md của .month. */
+  details[open] > summary {
+    margin-bottom: var(--space-xs);
+  }
+
   @media (min-width: 768px) {
     .year {
       grid-template-columns: 120px minmax(0, 1fr);
       gap: var(--space-lg);
       padding-top: var(--space-xl);
+    }
+
+    /* Năm dính ở cột trái khi cuộn qua nhóm bài dài, để biết đang ở năm nào.
+       Mobile không dính: năm nằm trên nhóm bài, dính sẽ che tiêu đề bài. */
+    .year h2 {
+      position: sticky;
+      top: var(--space-lg);
+      align-self: start;
     }
   }
 
@@ -63,6 +202,12 @@ const groups = groupByYear(posts);
     .year {
       grid-template-columns: 200px minmax(0, 1fr);
       gap: var(--space-2xl);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    summary::after {
+      transition: none;
     }
   }
 </style>

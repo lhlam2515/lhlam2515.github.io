@@ -168,6 +168,21 @@ export function groupByYear(posts: Post[]): { year: number; posts: Post[] }[] {
   return [...groups].sort(([a], [b]) => b - a).map(([year, posts]) => ({ year, posts }));
 }
 
+/** Id anchor của nhóm năm/tháng trong danh sách bài; mục lục của /blog/ trỏ tới đây. */
+export function archiveId(year: number, month?: number): string {
+  return month ? `y${year}-m${String(month).padStart(2, "0")}` : `y${year}`;
+}
+
+/** Nhóm theo tháng đăng (1–12, UTC như `formatDate()`); bài đã xếp mới nhất trước thì tháng cũng vậy. */
+export function groupByMonth(posts: Post[]): { month: number; posts: Post[] }[] {
+  const groups = new Map<number, Post[]>();
+  for (const post of posts) {
+    const month = post.data.pubDate.getUTCMonth() + 1;
+    groups.set(month, [...(groups.get(month) ?? []), post]);
+  }
+  return [...groups].map(([month, posts]) => ({ month, posts }));
+}
+
 /**
  * IA-003: tối đa 3 bài, xếp theo số tag trùng rồi theo ngày mới hơn. Không
  * bài nào trùng tag thì trả về rỗng, không lấp bằng bài ngẫu nhiên.
